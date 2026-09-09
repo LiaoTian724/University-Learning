@@ -1,0 +1,44 @@
+<form method="post">
+
+{% csrf_token %}
+
+{% if error %}
+<p style="color:red;">
+{{ error }}
+</p>
+{% endif %}
+
+登录账号:
+
+<input
+name="username">
+
+
+<br>
+
+
+姓名拼音(不用于登录):
+
+<input
+name="real_name">
+
+
+<br>
+
+
+密码:
+
+<input
+type="password"
+name="password">
+
+
+<br>
+
+
+<button>
+注册
+</button>
+
+
+</form>

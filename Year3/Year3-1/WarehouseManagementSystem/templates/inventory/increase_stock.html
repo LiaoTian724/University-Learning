@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<h1>
+增加库存
+</h1>
+
+
+<h3>
+{{item.name}}
+</h3>
+
+
+<form method="post"
+      enctype="multipart/form-data">
+
+
+{% csrf_token %}
+
+
+
+增加数量:
+
+<input
+type="number"
+name="quantity"
+>
+
+
+<br><br>
+
+
+
+原因:
+
+<input
+type="text"
+name="reason"
+placeholder="采购/调拨">
+
+
+<br><br>
+
+
+位置照片:
+
+<input
+type="file"
+name="location_image"
+>
+
+
+<br><br>
+
+
+<button type="submit">
+
+确认增加
+
+</button>
+
+
+</form>
+
+
+
+{% endblock %}

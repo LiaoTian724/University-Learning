@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<h1>
+{{item.name}}
+</h1>
+
+
+<p>
+类别:
+{{item.category}}
+</p>
+
+
+<p>
+数量:
+{{item.quantity}}
+</p>
+
+
+<p>
+位置:
+{{item.location}}
+</p>
+
+
+<p>
+状态:
+{{item.status}}
+</p>
+
+
+<p>
+创建人:
+{{item.created_by}}
+</p>
+
+
+<p>
+创建时间:
+{{item.created_time}}
+</p>
+
+
+<h2>
+属性
+</h2>
+
+
+<table border="1">
+
+<tr>
+
+<th>
+属性
+</th>
+
+<th>
+值
+</th>
+
+</tr>
+
+
+{% for attr in item.attributes.all %}
+
+
+<tr>
+
+<td>
+{{attr.key}}
+</td>
+
+
+<td>
+{{attr.value}}
+</td>
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</table>
+
+{% if user.userprofile.role == "ADMIN" %}
+
+
+<a href="{% url 'increase_stock' item.id %}">
+增加库存
+</a>
+
+
+<br>
+
+
+<a href="">
+修改物品
+</a>
+
+
+<br>
+
+
+<a href="">
+停用物品
+</a>
+
+
+{% endif %}
+
+{% endblock %}

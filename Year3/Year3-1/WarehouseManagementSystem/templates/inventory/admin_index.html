@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+<h1>
+管理员控制台
+</h1>
+
+
+<h3>
+欢迎 {{request.user.username}}
+</h3>
+
+
+<!-- <p>
+请选择左侧功能进行管理。
+</p> -->
+
+
+{% if pending_count %}
+
+<p>
+当前有 {{pending_count}} 个用户等待审核。
+</p>
+
+{% endif %}
+
+
+{% endblock %}
