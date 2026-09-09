@@ -1,0 +1,578 @@
+/* =========================
+   全局
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin: 0;
+
+    padding: 0;
+
+    font-family:
+        "Microsoft YaHei",
+        Arial,
+        sans-serif;
+
+    background: #f4f6f9;
+
+    color: #333;
+
+}
+
+
+
+/* =========================
+   顶部导航
+========================= */
+
+
+.navbar {
+
+    width: 100%;
+
+    height: 64px;
+
+    background: #2c3e50;
+
+}
+
+
+.navbar-inner {
+
+    width: 92%;
+
+    max-width: 1400px;
+
+    height: 64px;
+
+    margin: auto;
+
+    display: flex;
+
+    align-items: center;
+
+}
+
+
+
+.navbar h2 {
+
+    color:white;
+
+    margin:0 40px 0 0;
+
+    font-size:24px;
+
+}
+
+
+
+.navbar a {
+
+    color:white;
+
+    text-decoration:none;
+
+    margin-right:25px;
+
+    font-size:16px;
+
+}
+
+
+
+.navbar a:hover {
+
+    color:#3498db;
+
+}
+
+
+
+/* =========================
+   主体区域
+========================= */
+
+
+.container {
+
+    width:92%;
+
+    max-width:1400px;
+
+    margin:30px auto;
+
+
+    background:white;
+
+    padding:35px;
+
+
+    border-radius:12px;
+
+
+    box-shadow:
+    0 5px 20px rgba(0,0,0,0.08);
+
+}
+
+
+
+h1 {
+
+    margin-top:0;
+
+    color:#2c3e50;
+
+    font-size:32px;
+
+}
+
+
+
+h2 {
+
+    color:#34495e;
+
+}
+
+
+
+/* =========================
+   按钮
+========================= */
+
+
+button,
+.btn {
+
+
+    background:#3498db;
+
+
+    color:white;
+
+
+    border:none;
+
+
+    padding:9px 18px;
+
+
+    border-radius:6px;
+
+
+    cursor:pointer;
+
+
+    text-decoration:none;
+
+
+    font-size:14px;
+
+
+}
+
+
+
+button:hover,
+.btn:hover {
+
+
+    background:#2980b9;
+
+}
+
+
+
+.btn-danger {
+
+
+    background:#e74c3c;
+
+}
+
+
+
+.btn-danger:hover {
+
+
+    background:#c0392b;
+
+}
+
+
+
+.btn-success {
+
+
+    background:#27ae60;
+
+}
+
+
+
+.btn-success:hover {
+
+
+    background:#1e8449;
+
+}
+
+
+
+/* =========================
+   表单
+========================= */
+
+
+input,
+select {
+
+
+    height:36px;
+
+
+    padding:0 12px;
+
+
+    border:1px solid #ccc;
+
+
+    border-radius:6px;
+
+
+    font-size:14px;
+
+
+}
+
+
+
+input:focus,
+select:focus {
+
+
+    outline:none;
+
+
+    border-color:#3498db;
+
+
+}
+
+
+
+label {
+
+
+    font-weight:bold;
+
+}
+
+
+
+/* =========================
+   搜索区域
+========================= */
+
+
+.search-box {
+
+
+    display:flex;
+
+
+    gap:10px;
+
+
+    align-items:center;
+
+
+    margin-bottom:20px;
+
+
+}
+
+
+
+/* =========================
+   表格
+========================= */
+
+
+table {
+
+
+    width:100%;
+
+
+    border-collapse:collapse;
+
+
+    margin-top:20px;
+
+
+}
+
+
+
+th {
+
+
+    background:#3498db;
+
+
+    color:white;
+
+
+    padding:14px 8px;
+
+
+    text-align:center;
+
+
+    font-size:15px;
+
+
+}
+
+
+
+td {
+
+
+    padding:12px 8px;
+
+
+    text-align:center;
+
+
+    border-bottom:1px solid #eee;
+
+
+}
+
+
+
+tr:hover {
+
+
+    background:#f7fbff;
+
+
+}
+
+
+
+/* 防止文字撑开 */
+
+td {
+
+
+    overflow:hidden;
+
+
+    text-overflow:ellipsis;
+
+
+    white-space:nowrap;
+
+
+}
+
+
+
+/* =========================
+   库存列表
+========================= */
+
+
+.inventory-table {
+
+
+    table-layout:fixed;
+
+}
+
+
+
+.inventory-table th:nth-child(1),
+.inventory-table td:nth-child(1){
+
+    width:12%;
+
+}
+
+
+.inventory-table th:nth-child(2),
+.inventory-table td:nth-child(2){
+
+    width:8%;
+
+}
+
+
+.inventory-table th:nth-child(3),
+.inventory-table td:nth-child(3){
+
+    width:8%;
+
+}
+
+
+.inventory-table th:nth-child(4),
+.inventory-table td:nth-child(4){
+
+    width:10%;
+
+}
+
+
+.inventory-table th:nth-child(5),
+.inventory-table td:nth-child(5){
+
+    width:10%;
+
+}
+
+
+.inventory-table th:nth-child(6),
+.inventory-table td:nth-child(6){
+
+    width:10%;
+
+}
+
+
+.inventory-table th:nth-child(7),
+.inventory-table td:nth-child(7){
+
+    width:12%;
+
+}
+
+
+
+/* =========================
+   状态
+========================= */
+
+
+.status-normal {
+
+    color:#27ae60;
+
+    font-weight:bold;
+
+}
+
+
+
+.status-warning {
+
+    color:#f39c12;
+
+    font-weight:bold;
+
+}
+
+
+
+.status-expired {
+
+    color:#e74c3c;
+
+    font-weight:bold;
+
+}
+
+
+
+.status-disabled {
+
+    color:#777;
+
+    font-weight:bold;
+
+}
+
+
+
+/* =========================
+   消息提示
+========================= */
+
+
+.message {
+
+
+    padding:12px;
+
+
+    margin-bottom:20px;
+
+
+    border-radius:6px;
+
+
+    background:#ecf0f1;
+
+
+}
+
+
+
+
+.location-image {
+    width: 500px;
+    height: 400px;
+    object-fit: contain;
+}
+
+
+.btn-disable {
+    background-color: red;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+.btn-enable {
+    background-color: green;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+.btn-disable:hover {
+    background-color: darkred;
+}
+
+
+.btn-enable:hover {
+    background-color: darkgreen;
+}
+
+
+.status-normal {
+    color: green;
+    font-weight: bold;
+}
+
+
+.status-disabled {
+    color: red;
+    font-weight: bold;
+}

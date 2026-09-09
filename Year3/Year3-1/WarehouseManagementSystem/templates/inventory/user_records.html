@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<h1>
+      用户操作记录
+</h1>
+
+
+
+<form method="get">
+
+
+      <label>
+            用户:
+      </label>
+
+
+      <input name="username" value="{{username|default:''}}" placeholder="例如 p2421086">
+
+
+
+      <label>
+            物品:
+      </label>
+
+
+      <input name="item" value="{{item_name}}" placeholder="输入物品名称">
+
+
+
+      <label>
+            操作:
+      </label>
+
+
+      <select name="type">
+
+
+            <option value="">
+                  全部
+            </option>
+
+
+
+            <option value="IN" {% if operation_type == "IN" %} selected {% endif %}>
+                  入库
+            </option>
+
+
+
+            <option value="OUT" {% if operation_type == "OUT" %} selected {% endif %}>
+                  出库
+            </option>
+
+
+      </select>
+
+
+
+      <button type="submit">
+            查询
+      </button>
+
+
+</form>
+
+
+
+<br>
+
+
+
+<table border="1">
+
+
+      <tr>
+
+            <th>
+                  时间
+            </th>
+
+
+            <th>
+                  用户
+            </th>
+
+
+            <th>
+                  物品
+            </th>
+
+
+            <th>
+                  操作
+            </th>
+
+
+            <th>
+                  原因
+            </th>
+
+
+            <th>
+                  数量
+            </th>
+
+      </tr>
+
+
+
+
+      {% for record in records %}
+
+
+      <tr>
+
+
+            <td>
+                  {{record.created_time}}
+            </td>
+
+
+
+            <td>
+                  {{record.user.username}}
+            </td>
+
+
+
+            <td>
+                  {{record.item.name}}
+            </td>
+
+
+
+            <td>
+                  {{record.get_type_display}}
+            </td>
+
+
+
+            <td>
+                  {{record.get_reason_display}}
+            </td>
+
+
+
+            <td>
+                  {{record.quantity}}
+            </td>
+
+
+      </tr>
+
+
+      {% empty %}
+
+
+      <tr>
+
+            <td colspan="6">
+
+                  暂无操作记录
+
+            </td>
+
+      </tr>
+
+
+      {% endfor %}
+
+
+
+</table>
+
+
+{% endblock %}

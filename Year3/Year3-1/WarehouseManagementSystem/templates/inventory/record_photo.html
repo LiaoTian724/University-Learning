@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<h1>
+      操作照片
+</h1>
+
+
+<p>
+      物品:
+      {{record.item.name}}
+</p>
+
+
+<p>
+      操作:
+      {{record.get_type_display}}
+</p>
+
+
+<p>
+      原因:
+      {{record.get_reason_display}}
+</p>
+
+
+<p>
+      时间:
+      {{record.created_time}}
+</p>
+
+
+
+{% if record.location_image %}
+
+
+<img src="{{record.location_image.url}}" width="500">
+
+
+{% else %}
+
+
+<p>
+      没有照片
+</p>
+
+
+{% endif %}
+
+
+{% endblock %}

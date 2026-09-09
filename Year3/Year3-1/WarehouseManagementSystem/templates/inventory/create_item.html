@@ -5,130 +5,196 @@
 
 
 <h1>
-新增物品
+    新增物品
 </h1>
 
 
-<form method="post"
-      enctype="multipart/form-data">
+<form method="post" enctype="multipart/form-data">
 
-{% csrf_token %}
-
-
-<label>
-物品名称:
-</label>
-
-<input 
-type="text"
-name="name"
->
+    {% csrf_token %}
 
 
-<br><br>
+    <label>
+        物品名称:
+    </label>
+
+    <input list="item_list" type="text" name="name" value="{{name}}" required>
 
 
-<label>
-类别:
-</label>
+    <datalist id="item_list">
 
-<input 
-type="text"
-name="category"
->
+        {% for item_name in item_names %}
 
+        <option value="{{item_name}}">
 
-<br><br>
+            {% endfor %}
+
+    </datalist>
 
 
-<label>
-数量:
-</label>
-
-<input
-type="number"
-name="quantity"
->
+    <br><br>
 
 
-<br><br>
+    <label>
+        类别:
+    </label>
+
+    <input list="category_list" type="text" name="category" value="{{category}}" required>
 
 
-<label>
-位置:
-</label>
-
-<input
-type="text"
-name="location"
->
-
-<br><br>
+    <datalist id="category_list">
 
 
-<label>
-位置照片:
-</label>
+        {% for c in categories %}
+
+        <option value="{{c}}">
+
+            {% endfor %}
 
 
-<input
-type="file"
-name="location_image">
+    </datalist>
 
 
-<hr>
+
+    {% if warning %}
 
 
-<h3>
-自定义属性
-</h3>
+    <input type="hidden" name="item_id" value="{{same_item.id}}">
 
 
-<div id="attributes">
+    <button type="submit" name="add_existing" value="1">
+
+        增加已有库存
+
+    </button>
 
 
-<div>
+    <button type="submit" name="force_create" value="1">
 
-<input
-type="text"
-name="attribute_key"
-placeholder="属性名，例如品牌"
->
+        仍然创建新物品
+
+    </button>
 
 
-<input
-type="text"
-name="attribute_value"
-placeholder="属性值，例如戴尔"
->
+    {% endif %}
 
 
-</div>
+
+    <br><br>
 
 
-</div>
+    <label>
+        数量:
+    </label>
+
+    <input type="number" name="quantity" value="{{quantity}}" min="1" required>
 
 
-<br>
+    <br><br>
 
 
-<button 
-type="button"
-onclick="addAttribute()">
+    <label>
+        位置:
+    </label>
 
-+ 添加属性
+    <input type="text" name="location" value="{{location}}">
 
-</button>
-
-
-<br><br>
+    <br><br>
 
 
-<button type="submit">
+    <label>
+        位置照片:
+    </label>
 
-保存
+    <input type="file" name="location_image">
 
-</button>
+
+    <br><br>
+
+
+
+
+    <label>
+        购买时间:
+    </label>
+
+    <input type="date" name="purchase_date" value="{{purchase_date}}">
+
+
+    <br><br>
+
+
+    <label>
+        有效期(月):
+    </label>
+
+
+    <input type="number" name="valid_period" value="{{valid_period}}" min="1">
+
+
+    <br><br>
+
+
+    <label>
+        失效时间:
+    </label>
+
+
+    <input type="date" name="expiry_date" value="{{expiry_date}}">
+
+
+    <br><br>
+
+
+    <label>
+        附件:
+    </label>
+    <input type="file" name="location_image">
+
+
+    <hr>
+
+
+    <h3>
+        自定义属性
+    </h3>
+
+
+    <div id="attributes">
+
+
+        <div>
+
+            <input type="text" name="attribute_key" placeholder="属性名，例如品牌">
+
+
+            <input type="text" name="attribute_value" placeholder="属性值，例如戴尔">
+
+
+        </div>
+
+
+    </div>
+
+
+    <br>
+
+
+    <button type="button" onclick="addAttribute()">
+
+        + 添加属性
+
+    </button>
+
+
+    <br><br>
+
+
+    <button type="submit">
+
+        保存
+
+    </button>
 
 
 </form>
@@ -137,12 +203,12 @@ onclick="addAttribute()">
 
 <script>
 
-function addAttribute(){
+    function addAttribute() {
 
-    let div = document.createElement("div");
+        let div = document.createElement("div");
 
 
-    div.innerHTML = `
+        div.innerHTML = `
 
     <br>
 
@@ -160,11 +226,11 @@ function addAttribute(){
     `;
 
 
-    document
-    .getElementById("attributes")
-    .appendChild(div);
+        document
+            .getElementById("attributes")
+            .appendChild(div);
 
-}
+    }
 
 
 </script>

@@ -117,16 +117,24 @@
 
 <td>
 {% if profile.status == "APPROVED" %}
+
 <form method="post" action="{% url 'disable_user' profile.user.username %}">
     {% csrf_token %}
-    <button type="submit">禁用</button>
+    <button type="submit" class="btn-disable">
+        禁用
+    </button>
 </form>
 
+
 {% elif profile.status == "DISABLED" %}
+
 <form method="post" action="{% url 'enable_user' profile.user.username %}">
     {% csrf_token %}
-    <button type="submit">恢复</button>
+    <button type="submit" class="btn-enable">
+        恢复
+    </button>
 </form>
+
 
 {% elif profile.status == "REJECTED" %}
       无

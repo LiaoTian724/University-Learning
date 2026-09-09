@@ -5,34 +5,47 @@
 
 
 <h1>
-增加库存
+修改物品
 </h1>
 
 
-<h3>
-{{item.name}}
-</h3>
-
-
-<form method="post"
-      enctype="multipart/form-data">
-
+<form method="post">
 
 {% csrf_token %}
 
 
-
-增加数量:
+名称:
 
 <input
-type="number"
-name="quantity"
-min="0"
-required
+name="name"
+value="{{item.name}}"
 >
 
 
 <br><br>
+
+
+类别:
+
+<input
+name="category"
+value="{{item.category}}"
+>
+
+
+<br><br>
+
+
+位置:
+
+<input
+name="location"
+value="{{item.location}}"
+>
+
+
+<br><br>
+
 购买日期:
 
 <input
@@ -66,55 +79,23 @@ name="expiry_date"
 value="{{ item.expiry_date|date:'Y-m-d' }}"
 >
 
-<br><br>
-
-
-原因:
-
-<select name="reason">
-
-
-<option value="PURCHASE">
-采购入库
-</option>
-
-
-<option value="RETURN">
-归还入库
-</option>
-
-
-<option value="TRANSFER_IN">
-调拨入库
-</option>
-
-
-</select>
-
 
 <br><br>
 
 
-位置照片:
-
-<input
-type="file"
-name="location_image"
->
 
 
-<br><br>
+
 
 
 <button type="submit">
 
-确认增加
+保存
 
 </button>
 
 
 </form>
-
 
 
 {% endblock %}

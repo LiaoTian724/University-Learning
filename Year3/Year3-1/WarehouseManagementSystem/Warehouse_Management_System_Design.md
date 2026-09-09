@@ -496,3 +496,14 @@ Warehouse Management System（WMS）
 10	操作记录	记录谁什么时候改了库存	StockRecord	ForeignKey + 时间记录
 11	图片上传	入库/操作时记录位置照片	ImageField	MEDIA配置、文件上传
 12	页面美化	提升使用体验	CSS	Bootstrap/CSS
+
+
+
+
+conda activate WarehouseManagement
+python manage.py runserver 
+
+
+conda activate WarehouseManagement
+python manage.py makemigrations
+python manage.py migrate

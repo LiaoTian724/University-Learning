@@ -13,9 +13,6 @@
 </h3>
 
 
-<!-- <p>
-请选择左侧功能进行管理。
-</p> -->
 
 
 {% if pending_count %}
@@ -24,7 +21,55 @@
 当前有 {{pending_count}} 个用户等待审核。
 </p>
 
+
 {% endif %}
+
+<a href="{% url 'user_records' %}">
+用户操作记录
+</a>
+
+
+<h2>
+用户统计
+</h2>
+
+
+<p>
+用户总数:
+{{user_count}}
+</p>
+
+
+<p>
+待审核:
+{{pending_count}}
+</p>
+
+
+<p>
+禁用:
+{{disabled_count}}
+</p>
+
+
+
+
+<h2>
+库存统计
+</h2>
+
+
+<p>
+物品种类:
+{{item_count}}
+</p>
+
+
+<p>
+库存数量:
+{{total_quantity}}
+</p>
+
 
 
 {% endblock %}

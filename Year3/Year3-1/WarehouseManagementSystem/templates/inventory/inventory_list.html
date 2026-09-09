@@ -1,112 +1,282 @@
-{% extends "base.html" %} 
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<h1>
+      库存列表
+</h1>
+
+<a href="{% url 'export_inventory_all' %}">
+      导出全部CSV
+</a>
+<br>
+
+<a
+      href="{% url 'export_inventory_filter' %}?keyword={{keyword}}&category={{category}}&status={{status}}&username={{username}}">
+      导出当前结果CSV
+</a>
+
+<form method="get">
+
+
+      <input type="text" name="keyword" placeholder="搜索名称/类别/位置" value="{{keyword}}">
+      <label>
+            用户:
+      </label>
+      <input name="username" value="{{username|default:''}}" placeholder="例如 p2421086">
+
+
+      <select name="category">
+
+            <option value="">
+                  全部类别
+            </option>
+
+
+            {% for c in categories %}
+
+            <option value="{{c}}" {% if category == c %} selected {% endif %}>
+
+                  {{c}}
+
+            </option>
+
+
+            {% endfor %}
+
+
+      </select>
+
+      <select name="status">
+
+
+            <option value="">
+                  全部状态
+            </option>
+
  
- 
-{% block content %} 
- 
- 
-<h1> 
-库存列表 
-</h1> 
- 
- 
-<table border="1"> 
- 
- 
- 
-<tr> 
- 
-<th> 
-名称 
-</th> 
- 
-<th> 
-类别 
-</th> 
- 
-<th> 
-数量 
-</th> 
- 
-<th> 
-位置 
-</th> 
- 
-<th> 
-状态 
-</th> 
- 
-<th> 
-操作 
-</th> 
- 
- 
-</tr> 
- 
- 
- 
- 
-{% for item in items %} 
- 
- 
-<tr> 
- 
-<td> 
-{{ item.name }} 
-</td> 
- 
- 
-<td> 
-{{ item.category }} 
-</td> 
- 
- 
-<td> 
-{{ item.quantity }} 
-</td> 
- 
- 
-<td> 
-{{item.location}} 
-</td> 
- 
- 
-<td> 
-{{item.status}} 
-</td> 
- 
- 
-<td> 
- 
-<a href="{% url 'item_detail' item.id %}"> 
-查看 
-</a> 
- 
- 
-</td> 
- 
-</tr> 
- 
- 
-{% empty %} 
- 
- 
-<tr> 
- 
-<td colspan="6"> 
- 
-暂无库存 
- 
-</td> 
- 
- 
-</tr> 
- 
- 
-{% endfor %} 
- 
- 
- 
-</table> 
- 
- 
+            <option value="正常" {% if status == "正常" %} selected {% endif %}>
+                  正常
+            </option>
+
+
+            <option value="停用" {% if status == "停用" %} selected {% endif %}>
+                  停用
+            </option>
+
+
+      </select>
+
+
+
+      <button type="submit">
+
+            搜索
+
+      </button>
+
+
+</form>
+
+
+
+
+<table>
+
+
+
+      <tr>
+
+            <th>
+                  名称
+            </th>
+
+            <th>
+                  类别
+            </th>
+
+            <th>
+                  数量
+            </th>
+
+            <th>
+                  创建者
+            </th>
+
+
+            <th>
+                  位置
+            </th>
+
+            <th>
+                  状态
+            </th>
+
+            <th>
+                  购买时间
+            </th>
+
+            <th>
+                  有效期
+            </th>
+
+            <th>
+                  失效时间
+            </th>
+            <th>
+                  有效期状态
+            </th>
+
+
+            <th>
+                  详细信息
+            </th>
+
+
+      </tr>
+
+
+
+
+      {% for item in items %}
+
+
+      <tr>
+
+            <td>
+                  {{ item.name }}
+            </td>
+
+
+            <td>
+                  {{ item.category }}
+            </td>
+
+
+            <td>
+                  {{ item.quantity }}
+            </td>
+
+            <td>
+                  {{item.created_by.username}}
+            </td>
+
+
+
+            <td>
+                  {{item.location}}
+            </td>
+
+
+            <!-- <td>
+                  {{item.status}}
+            </td> -->
+
+            <td>
+
+                  {% if item.status == "正常" %}
+
+                  <span class="status-normal">
+                        {{item.status}}
+                  </span>
+
+
+                  {% elif item.status == "停用" %}
+
+                  <span class="status-disabled">
+                        {{item.status}}
+                  </span>
+
+
+                  {% else %}
+
+                  {{item.status}}
+
+                  {% endif %}
+
+            </td>
+
+
+            <td>
+                  {{item.purchase_date}}
+            </td>
+
+
+            <td>
+                  {{item.valid_period}}个月
+            </td>
+
+
+            <td>
+                  {{item.expiry_date}}
+            </td>
+            <td>
+
+                  {% if item.expiration_status == "正常" %}
+
+                  <span class="status-normal">
+                        {{item.expiration_status}}
+                  </span>
+
+
+                  {% elif item.expiration_status == "即将过期" %}
+
+                  <span class="status-warning">
+                        {{item.expiration_status}}
+                  </span>
+
+
+                  {% elif item.expiration_status == "已过期" %}
+
+                  <span class="status-expired">
+                        {{item.expiration_status}}
+                  </span>
+
+
+                  {% else %}
+
+                  {{item.expiration_status}}
+
+                  {% endif %}
+
+
+            </td>
+
+
+            <td>
+
+                  <a href="{% url 'item_detail' item.id %}">
+                        查看
+                  </a>
+
+
+            </td>
+
+      </tr>
+
+
+      {% empty %}
+
+
+      <tr>
+
+            <td colspan="11">
+
+                  暂无库存
+
+            </td>
+
+
+      </tr>
+
+
+      {% endfor %}
+
+
+
+</table>
+
+
 {% endblock %}

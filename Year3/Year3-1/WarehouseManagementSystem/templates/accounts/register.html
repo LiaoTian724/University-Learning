@@ -1,44 +1,40 @@
 <form method="post">
 
-{% csrf_token %}
+      {% csrf_token %}
 
-{% if error %}
-<p style="color:red;">
-{{ error }}
-</p>
-{% endif %}
+      {% if error %}
+      <p style="color:red;">
+            {{ error }}
+      </p>
+      {% endif %}
 
-登录账号:
+      登录账号:
 
-<input
-name="username">
-
-
-<br>
+      <input name="username">
 
 
-姓名拼音(不用于登录):
-
-<input
-name="real_name">
+      <br>
 
 
-<br>
+      姓名拼音(不用于登录):
+
+      <input name="real_name">
 
 
-密码:
-
-<input
-type="password"
-name="password">
+      <br>
 
 
-<br>
+      密码:
+
+      <input type="password" name="password">
 
 
-<button>
-注册
-</button>
+      <br>
+
+
+      <button>
+            注册
+      </button>
 
 
 </form>

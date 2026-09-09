@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<h1>
+      减少库存
+</h1>
+
+
+<h3>
+      {{item.name}}
+</h3>
+
+
+<p>
+      当前数量:
+      {{item.quantity}}
+</p>
+
+
+
+<form method="post" enctype="multipart/form-data">
+
+
+      {% csrf_token %}
+
+
+
+      <label>
+            减少数量:
+      </label>
+
+
+      <input type="number" name="quantity" min="0" required>
+
+
+      <br><br>
+
+
+
+      <label>
+            原因:
+      </label>
+
+
+      <select name="reason">
+
+
+            <option value="BORROW">
+                  借出
+            </option>
+
+
+            <option value="SCRAP">
+                  报废
+            </option>
+
+
+            <option value="DAMAGE">
+                  损坏
+            </option>
+
+
+            <option value="TRANSFER_OUT">
+                  调拨
+            </option>
+
+
+            <option value="CHECK">
+                  盘点减少
+            </option>
+
+
+      </select>
+
+
+      <br><br>
+
+
+
+      <label>
+            位置照片:
+      </label>
+
+
+      <input type="file" name="location_image">
+
+
+      <br><br>
+
+
+
+      <button type="submit">
+
+            确认减少
+
+      </button>
+
+
+</form>
+
+
+
+{% endblock %}

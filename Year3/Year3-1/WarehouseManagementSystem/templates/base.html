@@ -1,3 +1,5 @@
+{% load static %}
+
 <!DOCTYPE html>
 
 <html>
@@ -8,35 +10,42 @@
 仓库管理系统
 </title>
 
+
+<link rel="stylesheet"
+href="{% static 'css/style.css' %}">
+
+
 </head>
 
 
 <body>
 
 
-<nav>
+<nav class="navbar">
+
+
+<div class="navbar-inner">
+
 
 <h2>
 仓库管理系统
 </h2>
 
 
+
 {% if user.is_authenticated %}
 
 
-<a href="/">
+<a href="{% url 'index' %}">
 首页
 </a>
 
-
-|
 
 <a href="{% url 'inventory_list' %}">
 库存列表
 </a>
 
 
-|
 
 {% if user.userprofile.role == "ADMIN" %}
 
@@ -46,30 +55,45 @@
 用户审核
 
 {% if pending_count %}
+
 ({{pending_count}})
+
 {% endif %}
 
 </a>
 
 
-|
 
 <a href="/inventory/create/">
 新增物品
 </a>
 
 
-|
 
 <a href="/admin/">
 Django Admin
 </a>
 
 
-|
-
 {% endif %}
 
+
+
+<span style="margin-left:auto;color:white;">
+
+
+用户:
+{{user.username}}
+
+
+&nbsp;&nbsp;
+
+
+姓名:
+{{user.userprofile.real_name}}
+
+
+&nbsp;&nbsp;
 
 
 <a href="{% url 'logout' %}">
@@ -77,13 +101,47 @@ Django Admin
 </a>
 
 
+</span>
+
+
+
 {% endif %}
+
+
+
+</div>
 
 
 </nav>
 
 
-<hr>
+
+
+
+<div class="container">
+
+
+
+{% if messages %}
+
+
+{% for message in messages %}
+
+
+<div class="message">
+
+{{ message }}
+
+</div>
+
+
+{% endfor %}
+
+
+{% endif %}
+
+
+
 
 
 {% block content %}
@@ -92,6 +150,15 @@ Django Admin
 {% endblock %}
 
 
+
+
+
+</div>
+
+
+
+
 </body>
+
 
 </html>
