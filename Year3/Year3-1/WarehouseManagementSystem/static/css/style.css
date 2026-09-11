@@ -576,3 +576,341 @@ td {
     color: red;
     font-weight: bold;
 }
+
+
+
+/* =========================
+   物品详情页 - 信息卡片
+========================= */
+
+
+/* 信息区域横向布局 */
+
+.info-grid {
+
+    display:grid;
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(200px,1fr));
+
+    gap:20px;
+
+    margin-top:20px;
+
+}
+
+
+
+
+
+/* 信息卡片 */
+
+.info-card {
+
+
+    background:#ffffff;
+
+
+    border:1px solid #e5e5e5;
+
+
+    border-radius:12px;
+
+
+    padding:20px;
+
+
+    min-height:100px;
+
+
+    box-shadow:
+    0 3px 10px rgba(0,0,0,0.06);
+
+
+    transition:0.2s;
+
+
+}
+
+
+
+
+
+.info-card:hover {
+
+
+    transform:translateY(-3px);
+
+
+    box-shadow:
+    0 6px 15px rgba(0,0,0,0.12);
+
+
+}
+
+
+
+
+
+/* 卡片标题 */
+
+.info-title {
+
+
+    color:#7f8c8d;
+
+
+    font-size:14px;
+
+
+    margin-bottom:12px;
+
+
+    font-weight:bold;
+
+
+}
+
+
+
+
+
+/* 卡片内容 */
+
+
+.info-content {
+
+
+    color:#2c3e50;
+
+
+    font-size:22px;
+
+
+    font-weight:bold;
+
+
+}
+
+
+
+
+
+/* =========================
+   自定义属性
+========================= */
+
+
+.attribute-grid {
+
+
+    display:grid;
+
+
+    grid-template-columns:
+    repeat(auto-fit,minmax(180px,1fr));
+
+
+    gap:15px;
+
+
+    margin-top:20px;
+
+
+}
+
+
+
+
+
+.attribute-card {
+
+
+    background:#fafafa;
+
+
+    border:1px solid #ddd;
+
+
+    border-radius:10px;
+
+
+    padding:15px;
+
+
+}
+
+
+
+
+
+.attribute-card .info-content {
+
+
+    font-size:18px;
+
+
+}
+
+
+
+
+
+/* =========================
+   图片区域
+========================= */
+
+
+.location-image {
+
+
+    width:500px;
+
+
+    height:400px;
+
+
+    max-width:100%;
+
+
+    object-fit:contain;
+
+
+    border-radius:10px;
+
+
+    border:1px solid #ddd;
+
+
+}
+
+
+
+
+
+/* =========================
+   操作记录滚动区域
+========================= */
+
+
+.record-container {
+
+
+    max-height:300px;
+
+
+    overflow-y:auto;
+
+
+    border:1px solid #ddd;
+
+
+    border-radius:8px;
+
+
+    margin-top:15px;
+
+
+}
+
+
+
+
+
+.record-container table {
+
+
+    margin-top:0;
+
+
+}
+
+
+
+
+
+/* =========================
+   管理员操作按钮区域
+========================= */
+
+
+.action-buttons {
+
+
+    display:flex;
+
+
+    gap:12px;
+
+
+    align-items:center;
+
+
+    flex-wrap:wrap;
+
+
+}
+
+
+
+
+
+.action-buttons a {
+
+
+    text-decoration:none;
+
+
+}
+
+
+
+
+
+.action-buttons form {
+
+
+    margin:0;
+
+
+}
+
+
+/* =========================
+   库存列表滚动区域
+========================= */
+
+
+.inventory-scroll {
+
+    max-height: 500px;
+
+    overflow-y: auto;
+
+    overflow-x: auto;
+
+    border:1px solid #ddd;
+
+    border-radius:8px;
+
+}
+
+
+/* 固定表头 */
+
+.inventory-scroll table {
+
+    margin-top:0;
+
+}
+
+
+.inventory-scroll th {
+
+    position: sticky;
+
+    top:0;
+
+    z-index:10;
+
+}

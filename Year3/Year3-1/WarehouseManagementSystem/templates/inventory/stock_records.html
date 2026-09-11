@@ -5,7 +5,7 @@
 
 
 <h1>
-      {{item.name}} 操作记录
+{{item.name}} 全部操作历史
 </h1>
 
 
@@ -61,7 +61,7 @@
 
 
             <td>
-                  {{record.created_time}}
+                  {{record.created_time|date:"Y-m-d H:i"}}
             </td>
 
 

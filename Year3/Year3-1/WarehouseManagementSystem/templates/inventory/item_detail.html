@@ -9,175 +9,458 @@
 </h1>
 
 
-<p>
-      类别:
-      {{item.category}}
-</p>
+<hr>
 
 
-<p>
-      数量:
-      {{item.quantity}}
-</p>
 
-
-<p>
-      位置:
-      {{item.location}}
-</p>
-
-
-<p>
-      状态:
-      {{item.status}}
-</p>
-
-<p>
-      有效期状态:
-      {{item.expiration_status}}
-</p>
-
-<p>
-      创建人:
-      {{item.created_by}}
-</p>
-
-
-<p>
-      创建时间:
-      {{item.created_time}}
-</p>
-
-<p>
-      购买时间:
-      {{item.purchase_date}}
-</p>
-<p>
-      有效期:
-      {{item.valid_period}} 个月
-</p>
-<p>
-      失效时间:
-      {{item.expiry_date}}
-</p>
+<!-- =====================
+     库存信息
+===================== -->
 
 
 <h2>
-      属性
+      库存信息
 </h2>
 
 
-<table border="1">
-
-      <tr>
-
-            <th>
-                  属性
-            </th>
-
-            <th>
-                  值
-            </th>
-
-      </tr>
+<div class="info-grid">
 
 
-      {% for attr in item.attributes.all %}
+      <div class="info-card">
+
+            <div class="info-title">
+                  类别
+            </div>
+
+            <div class="info-content">
+                  {{item.category}}
+            </div>
+
+      </div>
 
 
-      <tr>
 
-            <td>
-                  {{attr.key}}
-            </td>
+      <div class="info-card">
 
+            <div class="info-title">
+                  数量
+            </div>
 
-            <td>
-                  {{attr.value}}
-            </td>
+            <div class="info-content">
+                  {{item.quantity}}
+            </div>
 
-
-      </tr>
-
-
-      {% endfor %}
+      </div>
 
 
-</table>
+
+      <div class="info-card">
+
+            <div class="info-title">
+                  状态
+            </div>
+
+            <div class="info-content">
+                  {{item.get_status_display}}
+            </div>
+
+      </div>
 
 
-<br>
 
-<a href="{% url 'stock_records' item.id %}">
-      查看操作记录
-</a>
+      <div class="info-card">
 
-<br>
+            <div class="info-title">
+                  位置
+            </div>
+
+            <div class="info-content">
+                  {{item.location}}
+            </div>
+
+      </div>
+
+
+</div>
+
+
+
+<hr>
+
+
+
+
+<!-- =====================
+     生命周期
+===================== -->
+
+
+<h2>
+      生命周期
+</h2>
+
+
+<div class="info-grid">
+
+
+      <div class="info-card">
+
+            <div class="info-title">
+                  购买时间
+            </div>
+
+            <div class="info-content">
+                  {{item.purchase_date|date:"Y-m-d"}}
+            </div>
+
+      </div>
+
+
+
+      <div class="info-card">
+
+            <div class="info-title">
+                  有效期
+            </div>
+
+            <div class="info-content">
+                  {{item.valid_period}} 个月
+            </div>
+
+      </div>
+
+
+
+      <div class="info-card">
+
+            <div class="info-title">
+                  失效时间
+            </div>
+
+            <div class="info-content">
+                  {{item.expiry_date|date:"Y-m-d"}}
+            </div>
+
+      </div>
+
+
+
+      <div class="info-card">
+
+            <div class="info-title">
+                  有效期状态
+            </div>
+
+            <div class="info-content">
+                  {{item.expiration_status}}
+            </div>
+
+      </div>
+
+
+
+</div>
+
+
+
+<hr>
+
+
+
+
+
+
+
+<!-- =====================
+     管理员操作
+===================== -->
 
 
 {% if user.userprofile.role == "ADMIN" %}
 
 
+
 <h2>
-      操作
+      管理员操作
 </h2>
 
 
-<a href="{% url 'increase_stock' item.id %}">
-      增加库存
-</a>
 
-&nbsp;&nbsp;
+<div class="action-buttons">
 
 
-<a href="{% url 'decrease_stock' item.id %}">
-      减少库存
-</a>
 
-&nbsp;&nbsp;
+      <a href="{% url 'increase_stock' item.id %}">
 
+            <button type="button">
 
-<a class="btn" href="{% url 'update_item' item.id %}">
-      修改物品
-</a>
+                  增加库存
 
+            </button>
 
-&nbsp;&nbsp;
+      </a>
 
 
-{% if item.status == "正常" %}
-
-<form method="post" action="{% url 'disable_item' item.id %}" style="display:inline;">
-
-      {% csrf_token %}
-
-      <button type="submit" onclick="return confirm('确定停用该物品吗?')">
-            停用物品
-      </button>
-
-</form>
 
 
-{% else %}
+      <a href="{% url 'decrease_stock' item.id %}">
+
+            <button type="button">
+
+                  减少库存
+
+            </button>
+
+      </a>
 
 
-<form method="post" action="{% url 'enable_item' item.id %}" style="display:inline;">
 
-      {% csrf_token %}
 
-      <button type="submit">
-            恢复物品
-      </button>
+      <a href="{% url 'update_item' item.id %}">
 
-</form>
+            <button type="button">
+
+                  修改物品
+
+            </button>
+
+      </a>
+
+
+
+
+      {% if item.status == "正常" %}
+
+
+
+      <form method="post" action="{% url 'disable_item' item.id %}">
+
+
+            {% csrf_token %}
+
+
+
+            <button type="submit" onclick="return confirm('确定停用该物品吗?')">
+
+
+                  停用物品
+
+
+            </button>
+
+
+      </form>
+
+
+
+
+      {% else %}
+
+
+
+
+      <form method="post" action="{% url 'enable_item' item.id %}">
+
+
+            {% csrf_token %}
+
+
+
+            <button type="submit">
+
+
+                  恢复物品
+
+
+            </button>
+
+
+      </form>
+
+
+
+
+      {% endif %}
+
+
+
+
+</div>
+
 
 
 {% endif %}
 
+<hr>
+<!-- =====================
+     管理信息
+===================== -->
+<h2>
+      管理信息
+</h2>
 
 
 
-{% endif %}
+<div class="info-grid">
+
+
+
+      <div class="info-card">
+
+            <div class="info-title">
+                  创建人
+            </div>
+
+            <div class="info-content">
+
+                  {{item.created_by.username}}
+
+            </div>
+
+      </div>
+
+
+
+      <div class="info-card">
+
+            <div class="info-title">
+                  创建时间
+            </div>
+
+            <div class="info-content">
+
+                  {{item.created_time|date:"Y-m-d H:i"}}
+
+            </div>
+
+      </div>
+
+
+
+      <div class="info-card">
+
+            <div class="info-title">
+                  最后修改人
+            </div>
+
+            <div class="info-content">
+
+
+                  {% if item.last_modified_by %}
+
+                  {{item.last_modified_by.username}}
+
+                  {% else %}
+
+                  暂无
+
+                  {% endif %}
+
+
+            </div>
+
+      </div>
+
+
+
+      <div class="info-card">
+
+            <div class="info-title">
+                  最后修改时间
+            </div>
+
+            <div class="info-content">
+
+                  {{item.last_modified_time|date:"Y-m-d H:i"}}
+
+            </div>
+
+      </div>
+
+
+
+</div>
+
+
+
+
+<hr>
+
+
+
+
+
+<!-- =====================
+     自定义属性
+===================== -->
+
+
+<h2>
+      自定义属性
+</h2>
+
+
+
+<div class="attribute-grid">
+
+
+
+      {% for attr in item.attributes.all %}
+
+
+
+      <div class="attribute-card">
+
+
+            <div class="info-title">
+
+                  {{attr.key}}
+
+            </div>
+
+
+            <div class="info-content">
+
+                  {{attr.value}}
+
+            </div>
+
+
+
+      </div>
+
+
+
+      {% empty %}
+
+
+      <div>
+
+            暂无属性
+
+      </div>
+
+
+
+      {% endfor %}
+
+
+
+</div>
+
+
+
+
+<hr>
+
+
+
+
+
+<!-- =====================
+     当前照片
+===================== -->
+
 
 <h2>
       当前位置照片
@@ -187,14 +470,213 @@
 
 {% if item.current_location_image %}
 
-<img src="{{item.current_location_image.url}}"
-     style="max-width:600px; max-height:500px; object-fit:contain;">
+
+<img src="{{item.current_location_image.url}}" class="location-image">
+
+
 
 {% else %}
 
+
 暂无照片
 
+
 {% endif %}
+
+
+
+
+<hr>
+
+
+
+
+
+<!-- =====================
+     操作记录
+===================== -->
+
+
+<h2>
+      最近操作记录
+</h2>
+
+
+
+
+<div class="record-container">
+
+
+
+      <table border="1" style="
+width:100%;
+">
+
+
+            <tr>
+
+
+                  <th>
+                        时间
+                  </th>
+
+
+                  <th>
+                        操作人
+                  </th>
+
+
+                  <th>
+                        类型
+                  </th>
+
+
+                  <th>
+                        原因
+                  </th>
+
+
+                  <th>
+                        数量
+                  </th>
+
+
+            </tr>
+
+
+
+            {% for record in records %}
+
+
+
+            <tr>
+
+
+                  <td>
+
+                        {{record.created_time|date:"Y-m-d H:i"}}
+
+                  </td>
+
+
+
+                  <td>
+
+
+                        {% if record.user %}
+
+                        {{record.user.username}}
+
+                        {% else %}
+
+                        系统
+
+                        {% endif %}
+
+
+                  </td>
+
+
+
+                  <td>
+
+                        {{record.get_type_display}}
+
+                  </td>
+
+
+
+                  <td>
+
+                        {{record.get_reason_display}}
+
+                  </td>
+
+
+
+                  <td>
+
+
+
+                        {% if record.type == "IN" %}
+
+                        +
+
+                        {% else %}
+
+                        -
+
+                        {% endif %}
+
+
+                        {{record.quantity}}
+
+
+
+                  </td>
+
+
+
+            </tr>
+
+
+
+
+            {% empty %}
+
+
+
+            <tr>
+
+                  <td colspan="5">
+
+                        暂无操作记录
+
+                  </td>
+
+            </tr>
+
+
+
+            {% endfor %}
+
+
+
+      </table>
+
+
+
+</div>
+
+
+
+
+<br>
+
+
+
+<a href="{% url 'stock_records' item.id %}">
+      查看全部历史记录
+</a>
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+
+
+
+<a href="{% url 'inventory_list' %}">
+      返回库存列表
+</a>
 
 
 

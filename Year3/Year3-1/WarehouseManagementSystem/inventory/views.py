@@ -438,6 +438,7 @@ def create_item(request):
             valid_period=valid_period,
             expiry_date=expiry_date,
             current_location_image=image,
+            last_modified_by=request.user,
         )
 
         # =====================
@@ -549,11 +550,23 @@ def record_photo(request, id):
 #     )
 
 
+@login_required
 def item_detail(request, id):
 
     item = get_object_or_404(Item, id=id)
 
-    return render(request, "inventory/item_detail.html", {"item": item})
+    records = StockRecord.objects.filter(item=item).order_by("-created_time")
+
+    return render(
+        request,
+        "inventory/item_detail.html",
+        {
+            "item": item,
+            # 最近操作记录
+            "records": records,
+            # "records": records[:10],
+        },
+    )
 
 
 @login_required
@@ -663,7 +676,7 @@ def increase_stock(request, id):
             # =====================
 
             item.quantity += quantity
-
+            item.last_modified_by = request.user
             item.save()
 
             # =====================
@@ -739,7 +752,7 @@ def decrease_stock(request, id):
             if image:
 
                 item.current_location_image = image
-
+            item.last_modified_by = request.user
             item.save()
 
             StockRecord.objects.create(
@@ -866,7 +879,7 @@ def enable_item(request, id):
     item = get_object_or_404(Item, id=id)
 
     item.status = "正常"
-
+    item.last_modified_by = request.user
     item.save()
 
     return redirect("inventory_list")
@@ -885,7 +898,7 @@ def disable_item(request, id):
     item = Item.objects.get(id=id)
 
     item.status = "停用"
-
+    item.last_modified_by = request.user
     item.save()
 
     return redirect("inventory_list")

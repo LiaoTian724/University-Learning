@@ -50,7 +50,7 @@ class Item(models.Model):
 
     expiry_date = models.DateField(null=True, blank=True, verbose_name="失效时间")
 
-    expiration_date = models.DateField(null=True, blank=True)
+    # expiration_date = models.DateField(null=True, blank=True)
 
     @property
     def expiration_status(self):
