@@ -28,9 +28,13 @@ import os
 
 DEBUG = os.environ.get("DEBUG", "False") == "True"
 
-# ALLOWED_HOSTS = [
-#     "LiaoTian.pythonanywhere.com"
-# ]
+import os
+
+
+ALLOWED_HOSTS = os.environ.get(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1"
+).split(",")
 
 # Application definition
 
