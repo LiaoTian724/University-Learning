@@ -45,8 +45,7 @@ href="{% static 'css/style.css' %}">
 库存列表
 </a>
 
-
-{% if user.is_authenticated and user.userprofile.role == "ADMIN" %}
+{% if user.userprofile.role == "ADMIN" %}
 
 
 <a href="{% url 'approve_users' %}">
@@ -77,7 +76,7 @@ Django Admin
 {% endif %}
 
 
-{% if user.is_authenticated %}
+
 <span style="margin-left:auto;color:white;">
 
 
