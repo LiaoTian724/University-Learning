@@ -176,7 +176,7 @@
 ===================== -->
 
 
-{% if user.userprofile.role == "ADMIN" %}
+{% if user.is_authenticated and user.userprofile.role == "ADMIN" %}
 
 
 

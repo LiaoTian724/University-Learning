@@ -24,12 +24,12 @@ def admin_required(request):
 from django.db.models import Sum
 from django.contrib.auth.models import User
 
-
+@login_required
 def index(request):
 
     user = request.user
 
-    if user.userprofile.role == "ADMIN":
+    if user.is_authenticated and user.userprofile.role == "ADMIN":
 
         pending_count = UserProfile.objects.filter(status="PENDING").count()
         user_count = User.objects.count()
