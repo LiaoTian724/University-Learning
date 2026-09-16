@@ -83,6 +83,31 @@
     <br><br>
 
 
+
+   
+
+
+    <label>
+        库存类型:
+    </label>
+
+
+    <select name="is_serialized" id="inventory_type">
+
+        <option value="0">
+            普通库存
+        </option>
+
+
+        <option value="1">
+            单件设备管理
+        </option>
+
+    </select>
+
+
+    <br><br>
+
     <label>
         数量:
     </label>
@@ -91,6 +116,9 @@
 
 
     <br><br>
+    <div id="serial-container">
+
+    </div>
 
 
     <label>
@@ -207,16 +235,14 @@
 
         let div = document.createElement("div");
 
-
         div.innerHTML = `
 
     <br>
 
-    <input
+    <input 
     type="text"
     name="attribute_key"
     placeholder="属性名">
-
 
     <input
     type="text"
@@ -231,6 +257,95 @@
             .appendChild(div);
 
     }
+
+
+
+    const quantityInput =
+        document.querySelector(
+            'input[name="quantity"]'
+        );
+
+
+    const container =
+        document.getElementById(
+            "serial-container"
+        );
+
+
+
+    const typeSelect =
+        document.getElementById(
+            "inventory_type"
+        );
+
+
+
+    function generateSerialInputs() {
+
+
+        container.innerHTML = "";
+
+
+        if (typeSelect.value == "0") {
+            return;
+        }
+
+
+        let quantity = parseInt(
+            quantityInput.value
+        );
+
+
+        if (!quantity) {
+            return;
+        }
+
+
+        for (let i = 1; i <= quantity; i++) {
+
+
+            let div = document.createElement("div");
+
+
+            div.innerHTML = `
+
+        <label>
+        设备编号 ${i}
+        </label>
+
+        <input
+        type="text"
+        name="serial_numbers"
+        required>
+
+        <br><br>
+
+        `;
+
+
+            container.appendChild(div);
+
+        }
+
+    }
+
+
+
+    if (typeSelect) {
+
+        typeSelect.addEventListener(
+            "change",
+            generateSerialInputs
+        );
+
+    }
+
+
+    quantityInput.addEventListener(
+        "input",
+        generateSerialInputs
+    );
+
 
 
 </script>

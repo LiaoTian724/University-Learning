@@ -13,7 +13,10 @@ class Item(models.Model):
 
     category = models.CharField(max_length=100, blank=True)
 
+    is_serialized = models.BooleanField(default=False, verbose_name="是否需要设备编号")
+
     quantity = models.IntegerField(default=0)
+    is_serialized = models.BooleanField(default=False, verbose_name="是否单件管理")
 
     location = models.CharField(max_length=200, blank=True)
 
@@ -83,6 +86,33 @@ class Item(models.Model):
         return self.name
 
 
+class Asset(models.Model):
+
+    STATUS_CHOICES = [
+        ("AVAILABLE", "可用"),
+        ("BORROWED", "借出"),
+        ("DAMAGED", "损坏"),
+        ("LOST", "丢失"),
+    ]
+
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="assets")
+
+    serial_number = models.CharField(
+        max_length=100, unique=True, verbose_name="设备编号"
+    )
+
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default="AVAILABLE"
+    )
+
+    location = models.CharField(max_length=200, blank=True)
+
+    created_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.item.name}-{self.serial_number}"
+
+
 # =========================
 # 动态属性表
 # =========================
@@ -121,6 +151,7 @@ class StockRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    asset = models.ForeignKey(Asset, on_delete=models.SET_NULL, null=True, blank=True)
 
     type = models.CharField(max_length=20, choices=TYPE_CHOICES)
 

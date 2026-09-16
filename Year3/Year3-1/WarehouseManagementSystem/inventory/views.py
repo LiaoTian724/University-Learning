@@ -2,7 +2,7 @@ from accounts.models import UserProfile
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from .models import Item, ItemAttribute, StockRecord
+from .models import Item, ItemAttribute, StockRecord, Asset
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
@@ -23,6 +23,7 @@ def admin_required(request):
 
 from django.db.models import Sum
 from django.contrib.auth.models import User
+
 
 @login_required
 def index(request):
@@ -168,6 +169,16 @@ def create_item(request):
             quantity = int(quantity_str)
 
             item.quantity += quantity
+            # 如果是单件设备管理
+            if item.is_serialized:
+
+                serial_numbers = request.POST.getlist("serial_numbers")
+
+                for serial in serial_numbers:
+
+                    if serial.strip():
+
+                        Asset.objects.create(item=item, serial_number=serial.strip())
 
             image = request.FILES.get("location_image")
 
@@ -341,18 +352,6 @@ def create_item(request):
                 },
             )
 
-        # if purchase_date and valid_period and not expiry_date:
-
-        #     expiry_date = purchase_date + relativedelta(months=valid_period)
-        # if purchase_date and expiry_date and not valid_period:
-
-        #     diff = relativedelta(expiry_date, purchase_date)
-
-        #     valid_period = diff.years * 12 + diff.months
-
-        # if valid_period and expiry_date and not purchase_date:
-
-        #     purchase_date = expiry_date - relativedelta(months=valid_period)
         purchase_date, valid_period, expiry_date = calculate_expiry(
             purchase_date, valid_period, expiry_date
         )
@@ -389,8 +388,11 @@ def create_item(request):
         # 检查重复物品
         # =====================
 
-        same_item = Item.objects.filter(name=name, category=category).first()
-
+        same_item = Item.objects.filter(
+            name=name,
+            category=category,
+            is_serialized=request.POST.get("is_serialized") == "1",
+        ).first()
         force_create = request.POST.get("force_create")
 
         if same_item and not force_create:
@@ -405,6 +407,7 @@ def create_item(request):
                 {
                     "warning": True,
                     "same_item": same_item,
+                    "is_serialized": same_item.is_serialized,
                     "name": name,
                     "category": category,
                     "quantity": quantity_str,
@@ -432,6 +435,7 @@ def create_item(request):
             name=name,
             category=category,
             quantity=quantity,
+            is_serialized=request.POST.get("is_serialized") == "1",
             location=location,
             created_by=request.user,
             purchase_date=purchase_date,
@@ -454,6 +458,15 @@ def create_item(request):
             if key and value:
 
                 ItemAttribute.objects.create(item=item, key=key, value=value)
+
+        if item.is_serialized:
+            serial_numbers = request.POST.getlist("serial_numbers")
+
+            for serial in serial_numbers:
+
+                if serial.strip():
+
+                    Asset.objects.create(item=item, serial_number=serial.strip())
 
         # =====================
         # 首次入库记录
@@ -479,6 +492,17 @@ def create_item(request):
             "item_names": Item.objects.values_list("name", flat=True).distinct(),
             "categories": Item.objects.values_list("category", flat=True).distinct(),
         },
+    )
+
+
+def asset_list(request, item_id):
+
+    item = Item.objects.get(id=item_id)
+
+    assets = Asset.objects.filter(item=item)
+
+    return render(
+        request, "inventory/asset_list.html", {"item": item, "assets": assets}
     )
 
 
@@ -597,9 +621,20 @@ def stock_in(request, id):
             item.current_location_image = image
 
         # 修改库存数量
-
+        # quantity = int(quantity_str)
         item.quantity += quantity
 
+        # 如果这个物品需要设备编号
+
+        if item.is_serialized:
+
+            serial_numbers = request.POST.getlist("serial_numbers")
+
+            for serial in serial_numbers:
+
+                if serial.strip():
+
+                    Asset.objects.create(item=item, serial_number=serial.strip())
         item.save()
 
         # 创建流水
@@ -676,6 +711,12 @@ def increase_stock(request, id):
             # =====================
 
             item.quantity += quantity
+            if item.is_serialized:
+                serial_numbers = request.POST.getlist("serial_numbers")
+                for serial in serial_numbers:
+                    if serial.strip():
+                        Asset.objects.create(item=item, serial_number=serial.strip())
+
             item.last_modified_by = request.user
             item.save()
 

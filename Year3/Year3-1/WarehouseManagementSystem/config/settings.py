@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-m=0!6l(rtaab%%1g$q&^5(u18638a)6v-mn+r3joqm%_*gu*@6
 import os
 
 
-DEBUG = os.environ.get("DEBUG", "False") == "True"
+DEBUG = os.environ.get("DEBUG", "True") == "True"
 
 import os
 

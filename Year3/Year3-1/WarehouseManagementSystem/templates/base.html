@@ -6,13 +6,12 @@
 
 <head>
 
-<title>
-仓库管理系统
-</title>
+      <title>
+            仓库管理系统
+      </title>
 
 
-<link rel="stylesheet"
-href="{% static 'css/style.css' %}">
+      <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
 
 </head>
@@ -21,139 +20,139 @@ href="{% static 'css/style.css' %}">
 <body>
 
 
-<nav class="navbar">
+      <nav class="navbar">
 
 
-<div class="navbar-inner">
+            <div class="navbar-inner">
 
 
-<h2>
-仓库管理系统
-</h2>
+                  <h2>
+                        仓库管理系统
+                  </h2>
 
 
 
-{% if user.is_authenticated %}
+                  {% if user.is_authenticated %}
 
 
-<a href="{% url 'index' %}">
-首页
-</a>
+                  <a href="{% url 'index' %}">
+                        首页
+                  </a>
 
 
-<a href="{% url 'inventory_list' %}">
-库存列表
-</a>
+                  <a href="{% url 'inventory_list' %}">
+                        库存列表
+                  </a>
 
-{% if user.userprofile.role == "ADMIN" %}
+                  {% if user.userprofile.role == "ADMIN" %}
 
 
-<a href="{% url 'approve_users' %}">
+                  <a href="{% url 'approve_users' %}">
 
-用户审核
+                        用户审核
 
-{% if pending_count %}
+                        {% if pending_count %}
 
-({{pending_count}})
+                        ({{pending_count}})
 
-{% endif %}
+                        {% endif %}
 
-</a>
+                  </a>
 
 
 
-<a href="/inventory/create/">
-新增物品
-</a>
+                  <a href="/inventory/create/">
+                        新增物品
+                  </a>
 
 
 
-<a href="/admin/">
-Django Admin
-</a>
+                  <a href="/admin/">
+                        Django Admin
+                  </a>
 
 
-{% endif %}
+                  {% endif %}
 
 
 
-<span style="margin-left:auto;color:white;">
+                  <span style="margin-left:auto;color:white;">
 
 
-用户:
-{{user.username}}
+                        用户:
+                        {{user.username}}
 
 
-&nbsp;&nbsp;
+                        &nbsp;&nbsp;
 
 
-姓名:
-{% if user.userprofile %}
-{{user.userprofile.real_name}}
-{% endif %}
+                        姓名:
+                        {% if user.userprofile %}
+                        {{user.userprofile.real_name}}
+                        {% endif %}
 
 
-&nbsp;&nbsp;
+                        &nbsp;&nbsp;
 
 
-<a href="{% url 'logout' %}">
-退出登录
-</a>
+                        <a href="{% url 'logout' %}">
+                              退出登录
+                        </a>
 
 
-</span>
+                  </span>
 
 
 
-{% endif %}
+                  {% endif %}
 
 
 
-</div>
+            </div>
 
 
-</nav>
+      </nav>
 
 
 
 
 
-<div class="container">
+      <div class="container">
 
 
 
-{% if messages %}
+            {% if messages %}
 
 
-{% for message in messages %}
+            {% for message in messages %}
 
 
-<div class="message">
+            <div class="message">
 
-{{ message }}
+                  {{ message }}
 
-</div>
+            </div>
 
 
-{% endfor %}
+            {% endfor %}
 
 
-{% endif %}
+            {% endif %}
 
 
 
 
 
-{% block content %}
+            {% block content %}
 
 
-{% endblock %}
+            {% endblock %}
 
 
 
 
 
-</div>
+      </div>
 
 
 

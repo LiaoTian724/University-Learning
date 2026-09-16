@@ -1,10 +1,6 @@
 from django.contrib import admin
 
-from .models import (
-    Item,
-    ItemAttribute,
-    StockRecord
-)
+from .models import Item, ItemAttribute, StockRecord, Asset
 
 
 class AttributeInline(admin.TabularInline):
@@ -12,26 +8,30 @@ class AttributeInline(admin.TabularInline):
     extra = 1
 
 
-
 @admin.register(Item)
 class ItemAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "quantity",
-        "status",
-        "created_by",
-        "created_time"
-    )
+    list_display = ("name", "quantity", "status", "created_by", "created_time")
     inlines = [
         AttributeInline,
     ]
 
 
-
 @admin.register(ItemAttribute)
 class AttributeAdmin(admin.ModelAdmin):
+    list_display = ("item", "key", "value")
+
+
+@admin.register(Asset)
+class AssetAdmin(admin.ModelAdmin):
+
     list_display = (
         "item",
-        "key",
-        "value"
+        "serial_number",
+        "status",
+        "location",
+    )
+
+    search_fields = (
+        "serial_number",
+        "item__name",
     )

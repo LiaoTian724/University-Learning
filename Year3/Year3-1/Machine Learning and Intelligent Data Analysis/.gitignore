@@ -1,0 +1,47 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# Python virtual environment
+venv/
+.venv/
+env/
+
+# Conda environment
+conda-meta/
+
+# Data files
+# *.csv
+# *.xlsx
+# *.xls
+
+# Model files
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.pt
+*.pth
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Documents
+*.pdf
+*.doc
+*.docx

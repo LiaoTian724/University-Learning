@@ -313,7 +313,7 @@
 
             <div class="info-content">
 
-                  {{item.created_by.username}}
+                  {{item.created_by.userprofile.real_name}}
 
             </div>
 
@@ -348,7 +348,7 @@
 
                   {% if item.last_modified_by %}
 
-                  {{item.last_modified_by.username}}
+                  {{item.created_by.userprofile.real_name}}
 
                   {% else %}
 
@@ -565,7 +565,7 @@ width:100%;
 
                         {% if record.user %}
 
-                        {{record.user.username}}
+                        {{item.created_by.userprofile.real_name}}
 
                         {% else %}
 

@@ -20,4 +20,5 @@ urlpatterns = [
         "export/filter/", views.export_inventory_filter, name="export_inventory_filter"
     ),
     path("photo/<int:id>/", views.record_photo, name="record_photo"),
+    path("item/<int:item_id>/assets/", views.asset_list, name="asset_list"),
 ]
