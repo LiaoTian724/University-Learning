@@ -21,7 +21,7 @@
 
 
 <a
-href="{% url 'export_inventory_filter' %}?keyword={{keyword}}&category={{category}}&status={{status}}">
+href="{% url 'export_inventory_filter' %}?keyword={{keyword|urlencode}}&serial_number={{serial_number|urlencode}}&username={{username|urlencode}}&category={{category|urlencode}}&status={{status|urlencode}}">
     导出当前结果CSV
 </a>
 
@@ -43,9 +43,20 @@ href="{% url 'export_inventory_filter' %}?keyword={{keyword}}&category={{categor
 <input
 type="text"
 name="keyword"
-placeholder="搜索名称/类别/位置"
+placeholder="搜索名称/类别/位置/设备编码"
 value="{{keyword|default:''}}">
 
+<input
+type="text"
+name="serial_number"
+placeholder="精确查找设备编码"
+value="{{serial_number|default:''}}">
+
+<input
+type="text"
+name="username"
+placeholder="按创建人账号搜索"
+value="{{username|default:''}}">
 
 
 <select name="category">
@@ -161,6 +172,10 @@ selected
 数量
 </th>
 
+<th>
+设备编码
+</th>
+
 
 <th>
 位置
@@ -203,6 +218,18 @@ selected
 
 <td>
 {{item.quantity}}
+</td>
+
+<td>
+{% if item.is_serialized %}
+    {% for asset in item.assets.all %}
+        {{asset.serial_number}}{% if not forloop.last %}、{% endif %}
+    {% empty %}
+        未录入
+    {% endfor %}
+{% else %}
+    -
+{% endif %}
 </td>
 
 
@@ -281,7 +308,7 @@ href="{% url 'item_detail' item.id %}">
 <tr>
 
 
-<td colspan="6">
+<td colspan="7">
 
 
 暂无库存

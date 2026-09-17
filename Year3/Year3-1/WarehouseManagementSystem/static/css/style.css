@@ -801,6 +801,8 @@ td {
 
     overflow-y:auto;
 
+    overflow-x:auto;
+
 
     border:1px solid #ddd;
 
@@ -913,4 +915,25 @@ td {
 
     z-index:10;
 
+}
+
+.record-container th,
+.detail-scroll th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+}
+
+.detail-scroll {
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.detail-scroll table {
+    margin-top: 0;
+    min-width: 650px;
 }

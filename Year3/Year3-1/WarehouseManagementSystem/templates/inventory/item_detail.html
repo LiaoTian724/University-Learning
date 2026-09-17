@@ -19,7 +19,7 @@
 
 
 <h2>
-      库存信息
+      基本信息
 </h2>
 
 
@@ -33,7 +33,7 @@
             </div>
 
             <div class="info-content">
-                  {{item.category}}
+                  {{item.category|default:"未填写"}}
             </div>
 
       </div>
@@ -82,6 +82,37 @@
 
 
 </div>
+
+{% if item.is_serialized %}
+<hr>
+
+<h2>单件设备明细</h2>
+
+<p>设备编码档案共 {{item.assets.count}} 条；当前可用库存 {{item.quantity}} 件。</p>
+
+<div class="detail-scroll">
+<table border="1" style="width:100%;">
+      <tr>
+            <th>设备编码</th>
+            <th>状态</th>
+            <th>位置</th>
+            <th>录入时间</th>
+      </tr>
+      {% for asset in item.assets.all %}
+      <tr>
+            <td>{{asset.serial_number}}</td>
+            <td>{{asset.get_status_display}}</td>
+            <td>{{asset.location|default:item.location|default:"-"}}</td>
+            <td>{{asset.created_time|date:"Y-m-d H:i"}}</td>
+      </tr>
+      {% empty %}
+      <tr>
+            <td colspan="4">暂无设备编码，请先通过“增加库存”补录。</td>
+      </tr>
+      {% endfor %}
+</table>
+</div>
+{% endif %}
 
 
 
@@ -540,6 +571,14 @@ width:100%;
                         数量
                   </th>
 
+                  <th>
+                        设备编码
+                  </th>
+
+                  <th>
+                        用途
+                  </th>
+
 
             </tr>
 
@@ -558,14 +597,12 @@ width:100%;
 
                   </td>
 
-
-
                   <td>
 
 
                         {% if record.user %}
 
-                        {{item.created_by.userprofile.real_name}}
+                        {{record.user.userprofile.real_name|default:record.user.username}}
 
                         {% else %}
 
@@ -615,6 +652,14 @@ width:100%;
 
                   </td>
 
+                  <td>
+                        {{record.asset.serial_number|default:"-"}}
+                  </td>
+
+                  <td>
+                        {{record.remark|default:"-"}}
+                  </td>
+
 
 
             </tr>
@@ -628,7 +673,7 @@ width:100%;
 
             <tr>
 
-                  <td colspan="5">
+                  <td colspan="7">
 
                         暂无操作记录
 

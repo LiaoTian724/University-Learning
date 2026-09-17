@@ -2,10 +2,31 @@ from accounts.models import UserProfile
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from .models import Item, ItemAttribute, StockRecord, Asset
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
+
+
+def get_serial_numbers(request):
+    """读取并清理用户提交的单件设备编码。"""
+    return [
+        serial.strip()
+        for serial in request.POST.getlist("serial_numbers")
+        if serial.strip()
+    ]
+
+
+def validate_serial_numbers(serial_numbers, quantity):
+    """确保单件设备数量与编码一一对应，且一次提交中没有重复编码。"""
+    if len(serial_numbers) != quantity:
+        return f"单件设备必须填写 {quantity} 个编码"
+
+    if len(set(serial_numbers)) != len(serial_numbers):
+        return "设备编码不能重复"
+
+    return None
 
 
 def admin_required(request):
@@ -14,7 +35,9 @@ def admin_required(request):
 
         return False
 
-    if request.user.userprofile.role != "ADMIN":
+    profile = getattr(request.user, "userprofile", None)
+
+    if not profile or profile.role != "ADMIN":
 
         return False
 
@@ -63,6 +86,7 @@ def index(request):
 from django.db.models import Q
 
 
+@login_required
 def inventory_list(request):
     items = get_filtered_items(request)
 
@@ -74,44 +98,10 @@ def inventory_list(request):
         Item.objects.exclude(category="").values_list("category", flat=True).distinct()
     )
     username = request.GET.get("username", "").strip()
-
-    if username:
-
-        items = items.filter(created_by__username__icontains=username)
-
-    # =====================
-    # 搜索
-    # =====================
-
-    keyword = request.GET.get("keyword", "")
-
-    # if keyword:
-
-    #     items = items.filter(
-    #         Q(name__icontains=keyword)
-    #         | Q(category__icontains=keyword)
-    #         | Q(location__icontains=keyword)
-    #     )
-
-    # # =====================
-    # # 类别筛选
-    # # =====================
-
+    keyword = request.GET.get("keyword", "").strip()
+    serial_number = request.GET.get("serial_number", "").strip()
     category = request.GET.get("category", "")
-
-    if category:
-
-        items = items.filter(category=category)
-
-    # =====================
-    # 状态筛选
-    # =====================
-
     status = request.GET.get("status", "")
-
-    if status:
-
-        items = items.filter(status=status)
 
     return render(
         request,
@@ -120,6 +110,7 @@ def inventory_list(request):
             "username": username,
             "items": items,
             "keyword": keyword,
+            "serial_number": serial_number,
             "category": category,
             "status": status,
             "categories": categories,
@@ -128,6 +119,7 @@ def inventory_list(request):
 
 
 @login_required
+@transaction.atomic
 def create_item(request):
 
     # 权限检查
@@ -136,6 +128,28 @@ def create_item(request):
         return HttpResponse("没有权限!")
 
     if request.method == "POST":
+
+        form_context = {
+            "name": request.POST.get("name", ""),
+            "category": request.POST.get("category", ""),
+            "quantity": request.POST.get("quantity", ""),
+            "location": request.POST.get("location", ""),
+            "purchase_date": request.POST.get("purchase_date", ""),
+            "valid_period": request.POST.get("valid_period", ""),
+            "expiry_date": request.POST.get("expiry_date", ""),
+            "is_serialized": request.POST.get("is_serialized") == "1",
+            "serial_numbers": request.POST.getlist("serial_numbers"),
+            "attribute_rows": list(
+                zip(
+                    request.POST.getlist("attribute_key"),
+                    request.POST.getlist("attribute_value"),
+                )
+            ),
+            "item_names": Item.objects.values_list("name", flat=True).distinct(),
+            "categories": Item.objects.exclude(category="")
+            .values_list("category", flat=True)
+            .distinct(),
+        }
 
         # =====================
         # 判断是否增加已有物品
@@ -159,6 +173,7 @@ def create_item(request):
                     request,
                     "inventory/create_item.html",
                     {
+                        **form_context,
                         "name": request.POST.get("name"),
                         "category": request.POST.get("category"),
                         "quantity": quantity_str,
@@ -168,17 +183,36 @@ def create_item(request):
 
             quantity = int(quantity_str)
 
+            added_assets = []
+
+            if item.is_serialized:
+                serial_numbers = get_serial_numbers(request)
+                serial_error = validate_serial_numbers(serial_numbers, quantity)
+
+                if not serial_error and Asset.objects.filter(
+                    serial_number__in=serial_numbers
+                ).exists():
+                    serial_error = "设备编码已存在"
+
+                if serial_error:
+                    messages.error(request, serial_error)
+                    return render(
+                        request,
+                        "inventory/create_item.html",
+                        {
+                            **form_context,
+                            "warning": True,
+                            "same_item": item,
+                        },
+                    )
+
             item.quantity += quantity
             # 如果是单件设备管理
             if item.is_serialized:
-
-                serial_numbers = request.POST.getlist("serial_numbers")
-
                 for serial in serial_numbers:
-
-                    if serial.strip():
-
-                        Asset.objects.create(item=item, serial_number=serial.strip())
+                    added_assets.append(
+                        Asset.objects.create(item=item, serial_number=serial)
+                    )
 
             image = request.FILES.get("location_image")
 
@@ -187,14 +221,26 @@ def create_item(request):
 
             item.save()
 
-            StockRecord.objects.create(
-                user=request.user,
-                item=item,
-                type="IN",
-                quantity=quantity,
-                reason="PURCHASE",
-                location_image=request.FILES.get("location_image"),
-            )
+            if item.is_serialized:
+                for index, asset in enumerate(added_assets):
+                    StockRecord.objects.create(
+                        user=request.user,
+                        item=item,
+                        asset=asset,
+                        type="IN",
+                        quantity=1,
+                        reason="PURCHASE",
+                        location_image=image if index == 0 else None,
+                    )
+            else:
+                StockRecord.objects.create(
+                    user=request.user,
+                    item=item,
+                    type="IN",
+                    quantity=quantity,
+                    reason="PURCHASE",
+                    location_image=image,
+                )
 
             messages.success(
                 request,
@@ -223,6 +269,7 @@ def create_item(request):
                 request,
                 "inventory/create_item.html",
                 {
+                    **form_context,
                     "name": name,
                     "category": category,
                     "quantity": quantity_str,
@@ -245,6 +292,7 @@ def create_item(request):
                 request,
                 "inventory/create_item.html",
                 {
+                    **form_context,
                     "name": name,
                     "category": category,
                     "quantity": quantity_str,
@@ -259,6 +307,38 @@ def create_item(request):
             )
 
         quantity = int(quantity_str)
+
+        is_serialized = request.POST.get("is_serialized") == "1"
+        serial_numbers = get_serial_numbers(request)
+
+        if is_serialized:
+            serial_error = validate_serial_numbers(serial_numbers, quantity)
+
+            if not serial_error and Asset.objects.filter(
+                serial_number__in=serial_numbers
+            ).exists():
+                serial_error = "设备编码已存在"
+
+            if serial_error:
+                messages.error(request, serial_error)
+                return render(
+                    request,
+                    "inventory/create_item.html",
+                    {
+                        **form_context,
+                        "name": name,
+                        "category": category,
+                        "quantity": quantity_str,
+                        "location": location,
+                        "is_serialized": True,
+                        "item_names": Item.objects.values_list(
+                            "name", flat=True
+                        ).distinct(),
+                        "categories": Item.objects.values_list(
+                            "category", flat=True
+                        ).distinct(),
+                    },
+                )
 
         purchase_date_str = request.POST.get("purchase_date")
 
@@ -286,6 +366,7 @@ def create_item(request):
                         request,
                         "inventory/create_item.html",
                         {
+                            **form_context,
                             "name": name,
                             "category": category,
                             "quantity": quantity_str,
@@ -310,6 +391,7 @@ def create_item(request):
                 request,
                 "inventory/create_item.html",
                 {
+                    **form_context,
                     "name": name,
                     "category": category,
                     "quantity": quantity_str,
@@ -336,6 +418,7 @@ def create_item(request):
                 request,
                 "inventory/create_item.html",
                 {
+                    **form_context,
                     "name": name,
                     "category": category,
                     "quantity": quantity_str,
@@ -366,6 +449,7 @@ def create_item(request):
                     request,
                     "inventory/create_item.html",
                     {
+                        **form_context,
                         "name": name,
                         "category": category,
                         "quantity": quantity_str,
@@ -388,14 +472,13 @@ def create_item(request):
         # 检查重复物品
         # =====================
 
+        # 同名普通库存禁止重复；同名单件设备把新编码归入已有物品。
         same_item = Item.objects.filter(
             name=name,
-            category=category,
-            is_serialized=request.POST.get("is_serialized") == "1",
+            is_serialized=is_serialized,
         ).first()
-        force_create = request.POST.get("force_create")
 
-        if same_item and not force_create:
+        if same_item:
             messages.warning(
                 request,
                 f"发现已有相同物品：{same_item.name}，当前库存 {same_item.quantity}",
@@ -405,6 +488,7 @@ def create_item(request):
                 request,
                 "inventory/create_item.html",
                 {
+                    **form_context,
                     "warning": True,
                     "same_item": same_item,
                     "is_serialized": same_item.is_serialized,
@@ -435,7 +519,7 @@ def create_item(request):
             name=name,
             category=category,
             quantity=quantity,
-            is_serialized=request.POST.get("is_serialized") == "1",
+            is_serialized=is_serialized,
             location=location,
             created_by=request.user,
             purchase_date=purchase_date,
@@ -459,27 +543,38 @@ def create_item(request):
 
                 ItemAttribute.objects.create(item=item, key=key, value=value)
 
+        created_assets = []
+
         if item.is_serialized:
-            serial_numbers = request.POST.getlist("serial_numbers")
-
             for serial in serial_numbers:
-
-                if serial.strip():
-
-                    Asset.objects.create(item=item, serial_number=serial.strip())
+                created_assets.append(
+                    Asset.objects.create(item=item, serial_number=serial)
+                )
 
         # =====================
         # 首次入库记录
         # =====================
 
-        StockRecord.objects.create(
-            user=request.user,
-            item=item,
-            type="IN",
-            quantity=quantity,
-            reason="INITIAL",
-            location_image=image,
-        )
+        if item.is_serialized:
+            for index, asset in enumerate(created_assets):
+                StockRecord.objects.create(
+                    user=request.user,
+                    item=item,
+                    asset=asset,
+                    type="IN",
+                    quantity=1,
+                    reason="INITIAL",
+                    location_image=image if index == 0 else None,
+                )
+        else:
+            StockRecord.objects.create(
+                user=request.user,
+                item=item,
+                type="IN",
+                quantity=quantity,
+                reason="INITIAL",
+                location_image=image,
+            )
 
         messages.success(request, f"物品 {item.name} 创建成功，库存 {quantity}")
 
@@ -491,10 +586,13 @@ def create_item(request):
         {
             "item_names": Item.objects.values_list("name", flat=True).distinct(),
             "categories": Item.objects.values_list("category", flat=True).distinct(),
+            "serial_numbers": [],
+            "attribute_rows": [],
         },
     )
 
 
+@login_required
 def asset_list(request, item_id):
 
     item = Item.objects.get(id=item_id)
@@ -551,6 +649,7 @@ def calculate_expiry(purchase_date, valid_period, expiry_date):
     return purchase_date, valid_period, expiry_date
 
 
+@login_required
 def record_photo(request, id):
 
     record = get_object_or_404(StockRecord, id=id)
@@ -653,9 +752,6 @@ def stock_in(request, id):
     return render(request, "inventory/stock_in.html", {"item": item})
 
 
-from django.db import transaction
-
-
 @login_required
 def increase_stock(request, id):
 
@@ -710,12 +806,46 @@ def increase_stock(request, id):
             # 修改库存
             # =====================
 
-            item.quantity += quantity
             if item.is_serialized:
-                serial_numbers = request.POST.getlist("serial_numbers")
+                serial_numbers = get_serial_numbers(request)
+                serial_error = validate_serial_numbers(serial_numbers, quantity)
+                stocked_assets = []
+                existing_assets = {
+                    asset.serial_number: asset
+                    for asset in Asset.objects.select_for_update().filter(
+                        serial_number__in=serial_numbers
+                    )
+                }
+
+                if not serial_error:
+                    for serial in serial_numbers:
+                        existing_asset = existing_assets.get(serial)
+                        can_return = (
+                            reason == "RETURN"
+                            and existing_asset
+                            and existing_asset.item_id == item.id
+                            and existing_asset.status == "BORROWED"
+                        )
+                        if existing_asset and not can_return:
+                            serial_error = f"设备编码 {serial} 已存在或不可入库"
+                            break
+
+                if serial_error:
+                    messages.error(request, serial_error)
+                    return redirect("increase_stock", id=item.id)
+
                 for serial in serial_numbers:
-                    if serial.strip():
-                        Asset.objects.create(item=item, serial_number=serial.strip())
+                    existing_asset = existing_assets.get(serial)
+                    if existing_asset:
+                        existing_asset.status = "AVAILABLE"
+                        existing_asset.save(update_fields=["status"])
+                        stocked_assets.append(existing_asset)
+                    else:
+                        stocked_assets.append(
+                            Asset.objects.create(item=item, serial_number=serial)
+                        )
+
+            item.quantity += quantity
 
             item.last_modified_by = request.user
             item.save()
@@ -724,14 +854,26 @@ def increase_stock(request, id):
             # 创建库存流水
             # =====================
 
-            StockRecord.objects.create(
-                user=request.user,
-                item=item,
-                type="IN",
-                quantity=quantity,
-                reason=reason,
-                location_image=image,
-            )
+            if item.is_serialized:
+                for index, asset in enumerate(stocked_assets):
+                    StockRecord.objects.create(
+                        user=request.user,
+                        item=item,
+                        asset=asset,
+                        type="IN",
+                        quantity=1,
+                        reason=reason,
+                        location_image=image if index == 0 else None,
+                    )
+            else:
+                StockRecord.objects.create(
+                    user=request.user,
+                    item=item,
+                    type="IN",
+                    quantity=quantity,
+                    reason=reason,
+                    location_image=image,
+                )
 
         return redirect("item_detail", id=item.id)
 
@@ -758,9 +900,9 @@ def decrease_stock(request, id):
     if request.method == "POST":
 
         try:
-            quantity = int(request.POST["quantity"])
+            quantity = int(request.POST.get("quantity", ""))
 
-        except ValueError:
+        except (TypeError, ValueError):
 
             messages.error(request, "请输入正确数量")
 
@@ -774,11 +916,21 @@ def decrease_stock(request, id):
 
         reason = request.POST.get("reason", "")
 
+        valid_reasons = {"BORROW", "SCRAP", "DAMAGE", "TRANSFER_OUT", "CHECK"}
+        if reason not in valid_reasons:
+            messages.error(request, "请选择正确的减少原因")
+            return redirect("decrease_stock", id=id)
+
+        remark = request.POST.get("remark", "").strip()
+        if not remark:
+            messages.error(request, "请填写本次库存减少的用途")
+            return redirect("decrease_stock", id=id)
+
         image = request.FILES.get("location_image")
 
         with transaction.atomic():
 
-            item = Item.objects.select_for_update().get(id=id)
+            item = get_object_or_404(Item.objects.select_for_update(), id=id)
 
             # 防止库存不足
 
@@ -788,6 +940,27 @@ def decrease_stock(request, id):
 
                 return redirect("decrease_stock", id=item.id)
 
+            selected_assets = []
+
+            if item.is_serialized:
+                serial_numbers = get_serial_numbers(request)
+                serial_error = validate_serial_numbers(serial_numbers, quantity)
+
+                if not serial_error:
+                    selected_assets = list(
+                        Asset.objects.select_for_update().filter(
+                            item=item,
+                            serial_number__in=serial_numbers,
+                            status="AVAILABLE",
+                        )
+                    )
+                    if len(selected_assets) != quantity:
+                        serial_error = "存在不属于当前物品或当前不可用的设备编码"
+
+                if serial_error:
+                    messages.error(request, serial_error)
+                    return redirect("decrease_stock", id=item.id)
+
             item.quantity -= quantity
 
             if image:
@@ -796,14 +969,36 @@ def decrease_stock(request, id):
             item.last_modified_by = request.user
             item.save()
 
-            StockRecord.objects.create(
-                user=request.user,
-                item=item,
-                type="OUT",
-                quantity=quantity,
-                reason=reason,
-                location_image=image,
-            )
+            if item.is_serialized:
+                status_by_reason = {
+                    "BORROW": "BORROWED",
+                    "DAMAGE": "DAMAGED",
+                }
+                new_status = status_by_reason.get(reason, "OUT")
+
+                for index, asset in enumerate(selected_assets):
+                    asset.status = new_status
+                    asset.save(update_fields=["status"])
+                    StockRecord.objects.create(
+                        user=request.user,
+                        item=item,
+                        asset=asset,
+                        type="OUT",
+                        quantity=1,
+                        reason=reason,
+                        remark=remark,
+                        location_image=image if index == 0 else None,
+                    )
+            else:
+                StockRecord.objects.create(
+                    user=request.user,
+                    item=item,
+                    type="OUT",
+                    quantity=quantity,
+                    reason=reason,
+                    remark=remark,
+                    location_image=image,
+                )
 
         messages.success(request, "库存减少成功")
 
@@ -813,12 +1008,21 @@ def decrease_stock(request, id):
 
         item = Item.objects.get(id=id)
 
-    return render(request, "inventory/decrease_stock.html", {"item": item})
+    return render(
+        request,
+        "inventory/decrease_stock.html",
+        {
+            "item": item,
+            "available_assets": item.assets.filter(status="AVAILABLE"),
+        },
+    )
 
 
 from .models import ItemChangeLog
 
 
+@login_required
+@transaction.atomic
 def update_item(request, id):
 
     if not admin_required(request):
@@ -911,11 +1115,15 @@ def update_item(request, id):
     return render(request, "inventory/update_item.html", {"item": item})
 
 
+@login_required
 def enable_item(request, id):
 
     if not admin_required(request):
 
         return HttpResponse("没有权限")
+
+    if request.method != "POST":
+        return HttpResponse("请求方式错误", status=405)
 
     item = get_object_or_404(Item, id=id)
 
@@ -926,6 +1134,7 @@ def enable_item(request, id):
     return redirect("inventory_list")
 
 
+@login_required
 def disable_item(request, id):
 
     if not admin_required(request):
@@ -983,6 +1192,7 @@ def user_records(request):
     )
 
 
+@login_required
 def stock_records(request, id):
     item = get_object_or_404(Item, id=id)
 
@@ -995,9 +1205,9 @@ def stock_records(request, id):
 
 def get_filtered_items(request):
 
-    items = Item.objects.all()
+    items = Item.objects.prefetch_related("assets").all()
 
-    keyword = request.GET.get("keyword", "")
+    keyword = request.GET.get("keyword", "").strip()
 
     if keyword:
 
@@ -1005,7 +1215,13 @@ def get_filtered_items(request):
             Q(name__icontains=keyword)
             | Q(category__icontains=keyword)
             | Q(location__icontains=keyword)
+            | Q(assets__serial_number__icontains=keyword)
         )
+
+    serial_number = request.GET.get("serial_number", "").strip()
+
+    if serial_number:
+        items = items.filter(assets__serial_number__icontains=serial_number)
 
     # 创建者搜索
     username = request.GET.get("username", "").strip()
@@ -1026,9 +1242,10 @@ def get_filtered_items(request):
 
         items = items.filter(status=status)
 
-    return items
+    return items.distinct()
 
 
+@login_required
 def export_inventory_all(request):
 
     items = Item.objects.all()
@@ -1036,6 +1253,7 @@ def export_inventory_all(request):
     return export_csv(items)
 
 
+@login_required
 def export_inventory_filter(request):
 
     items = get_filtered_items(request)
@@ -1057,7 +1275,9 @@ def export_csv(items):
 
     writer = csv.writer(response)
 
-    writer.writerow(["编号", "名称", "类别", "数量", "位置", "状态", "创建时间"])
+    writer.writerow(
+        ["编号", "名称", "设备编码", "类别", "数量", "位置", "状态", "创建时间"]
+    )
 
     for item in items:
 
@@ -1065,6 +1285,7 @@ def export_csv(items):
             [
                 item.id,
                 item.name,
+                "、".join(item.assets.values_list("serial_number", flat=True)),
                 item.category,
                 item.quantity,
                 item.location,

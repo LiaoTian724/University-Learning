@@ -39,7 +39,8 @@
         类别:
     </label>
 
-    <input list="category_list" type="text" name="category" value="{{category}}" required>
+    <input list="category_list" type="text" name="category" value="{{category}}"
+           placeholder="可选">
 
 
     <datalist id="category_list">
@@ -64,14 +65,11 @@
 
     <button type="submit" name="add_existing" value="1">
 
+        {% if same_item.is_serialized %}
+        将设备编码加入已有物品
+        {% else %}
         增加已有库存
-
-    </button>
-
-
-    <button type="submit" name="force_create" value="1">
-
-        仍然创建新物品
+        {% endif %}
 
     </button>
 
@@ -94,12 +92,12 @@
 
     <select name="is_serialized" id="inventory_type">
 
-        <option value="0">
+        <option value="0" {% if not is_serialized %}selected{% endif %}>
             普通库存
         </option>
 
 
-        <option value="1">
+        <option value="1" {% if is_serialized %}selected{% endif %}>
             单件设备管理
         </option>
 
@@ -191,15 +189,21 @@
     <div id="attributes">
 
 
-        <div>
-
-            <input type="text" name="attribute_key" placeholder="属性名，例如品牌">
-
-
-            <input type="text" name="attribute_value" placeholder="属性值，例如戴尔">
-
-
-        </div>
+        {% if attribute_rows %}
+            {% for key, value in attribute_rows %}
+            <div>
+                <input type="text" name="attribute_key" value="{{key}}"
+                       placeholder="属性名，例如品牌">
+                <input type="text" name="attribute_value" value="{{value}}"
+                       placeholder="属性值，例如戴尔">
+            </div>
+            {% endfor %}
+        {% else %}
+            <div>
+                <input type="text" name="attribute_key" placeholder="属性名，例如品牌">
+                <input type="text" name="attribute_value" placeholder="属性值，例如戴尔">
+            </div>
+        {% endif %}
 
 
     </div>
@@ -228,6 +232,7 @@
 </form>
 
 
+{{ serial_numbers|json_script:"initial-serial-numbers" }}
 
 <script>
 
@@ -259,6 +264,9 @@
     }
 
 
+    const initialSerialNumbers = JSON.parse(
+        document.getElementById("initial-serial-numbers").textContent
+    );
 
     const quantityInput =
         document.querySelector(
@@ -282,6 +290,13 @@
 
     function generateSerialInputs() {
 
+        const currentValues = Array.from(
+            container.querySelectorAll('input[name="serial_numbers"]')
+        ).map(input => input.value);
+
+        const retainedValues = currentValues.length
+            ? currentValues
+            : initialSerialNumbers;
 
         container.innerHTML = "";
 
@@ -316,6 +331,7 @@
         <input
         type="text"
         name="serial_numbers"
+        placeholder="手动输入设备编码"
         required>
 
         <br><br>
@@ -324,6 +340,9 @@
 
 
             container.appendChild(div);
+
+            div.querySelector('input[name="serial_numbers"]').value =
+                retainedValues[i - 1] || "";
 
         }
 
@@ -345,6 +364,8 @@
         "input",
         generateSerialInputs
     );
+
+    generateSerialInputs();
 
 
 

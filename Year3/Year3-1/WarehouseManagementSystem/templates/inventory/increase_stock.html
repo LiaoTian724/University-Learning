@@ -31,42 +31,20 @@ min="0"
 required
 >
 
-
+{% if item.is_serialized %}
 <br><br>
-购买日期:
 
-<input
-type="date"
-name="purchase_date"
-value="{{ item.purchase_date|date:'Y-m-d' }}"
->
+<p>该物品为单件设备，请为每件设备手动输入编码：</p>
+
+<div id="serial-container"></div>
+{% endif %}
 
 
 <br><br>
 
+<p>本次增加库存不会修改已有物品的购买日期、有效期和失效日期。</p>
 
-有效期(月):
-
-<input
-type="number"
-name="valid_period"
-value="{{ item.valid_period }}"
-min="0"
-required
->
-
-<br><br>
-
-
-失效日期:
-
-<input
-type="date"
-name="expiry_date"
-value="{{ item.expiry_date|date:'Y-m-d' }}"
->
-
-<br><br>
+<br>
 
 
 原因:
@@ -115,6 +93,29 @@ name="location_image"
 
 </form>
 
+{% if item.is_serialized %}
+<script>
+const quantityInput = document.querySelector('input[name="quantity"]');
+const serialContainer = document.getElementById("serial-container");
+
+function generateSerialInputs() {
+    serialContainer.innerHTML = "";
+    const quantity = parseInt(quantityInput.value) || 0;
+    for (let i = 1; i <= quantity; i++) {
+        const row = document.createElement("div");
+        row.innerHTML = `
+            <label>设备编码 ${i}:</label>
+            <input type="text" name="serial_numbers" required>
+            <br><br>
+        `;
+        serialContainer.appendChild(row);
+    }
+}
+
+quantityInput.addEventListener("input", generateSerialInputs);
+generateSerialInputs();
+</script>
+{% endif %}
 
 
 {% endblock %}

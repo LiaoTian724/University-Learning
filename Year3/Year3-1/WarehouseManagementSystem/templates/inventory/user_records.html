@@ -107,6 +107,14 @@
                   数量
             </th>
 
+            <th>
+                  设备编码
+            </th>
+
+            <th>
+                  用途
+            </th>
+
       </tr>
 
 
@@ -152,6 +160,14 @@
                   {{record.quantity}}
             </td>
 
+            <td>
+                  {{record.asset.serial_number|default:"-"}}
+            </td>
+
+            <td>
+                  {{record.remark|default:"-"}}
+            </td>
+
 
       </tr>
 
@@ -161,7 +177,7 @@
 
       <tr>
 
-            <td colspan="6">
+            <td colspan="8">
 
                   暂无操作记录
 

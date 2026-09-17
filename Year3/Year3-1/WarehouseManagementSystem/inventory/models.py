@@ -13,8 +13,6 @@ class Item(models.Model):
 
     category = models.CharField(max_length=100, blank=True)
 
-    is_serialized = models.BooleanField(default=False, verbose_name="是否需要设备编号")
-
     quantity = models.IntegerField(default=0)
     is_serialized = models.BooleanField(default=False, verbose_name="是否单件管理")
 
@@ -93,6 +91,7 @@ class Asset(models.Model):
         ("BORROWED", "借出"),
         ("DAMAGED", "损坏"),
         ("LOST", "丢失"),
+        ("OUT", "已出库"),
     ]
 
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="assets")

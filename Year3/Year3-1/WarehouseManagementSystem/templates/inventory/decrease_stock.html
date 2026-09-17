@@ -33,7 +33,21 @@
       </label>
 
 
-      <input type="number" name="quantity" min="1" required>
+      <input type="number" name="quantity" min="1" max="{{item.quantity}}" required>
+
+      {% if item.is_serialized %}
+      <br><br>
+
+      <p>该物品为单件设备，请按减少数量填写对应的设备编码：</p>
+
+      <div id="serial-container"></div>
+
+      <datalist id="available-serials">
+            {% for asset in available_assets %}
+            <option value="{{asset.serial_number}}">
+            {% endfor %}
+      </datalist>
+      {% endif %}
 
 
       <br><br>
@@ -78,6 +92,16 @@
 
       <br><br>
 
+      <label>
+            用途:
+      </label>
+
+      <input type="text" name="remark"
+             placeholder="例如：用于 A 区生产线维修" required>
+
+
+      <br><br>
+
 
 
       <label>
@@ -101,6 +125,30 @@
 
 </form>
 
+{% if item.is_serialized %}
+<script>
+const quantityInput = document.querySelector('input[name="quantity"]');
+const serialContainer = document.getElementById("serial-container");
+
+function generateSerialInputs() {
+      serialContainer.innerHTML = "";
+      const quantity = parseInt(quantityInput.value) || 0;
+      for (let i = 1; i <= quantity; i++) {
+            const row = document.createElement("div");
+            row.innerHTML = `
+                  <label>设备编码 ${i}:</label>
+                  <input type="text" name="serial_numbers"
+                         list="available-serials" required>
+                  <br><br>
+            `;
+            serialContainer.appendChild(row);
+      }
+}
+
+quantityInput.addEventListener("input", generateSerialInputs);
+generateSerialInputs();
+</script>
+{% endif %}
 
 
 {% endblock %}

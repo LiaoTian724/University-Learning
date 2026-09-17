@@ -39,6 +39,10 @@
                   数量
             </th>
 
+            <th>
+                  设备编码
+            </th>
+
 
             <th>
                   备注
@@ -88,6 +92,10 @@
                   {{record.quantity}}
             </td>
 
+            <td>
+                  {{record.asset.serial_number|default:"-"}}
+            </td>
+
 
 
             <td>
@@ -126,7 +134,7 @@
 
       <tr>
 
-            <td colspan="7">
+            <td colspan="8">
 
                   暂无记录
 
