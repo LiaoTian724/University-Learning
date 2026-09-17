@@ -1,4 +1,8 @@
+from io import BytesIO
+
+from PIL import Image
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
@@ -45,7 +49,7 @@ class SerializedInventoryTests(TestCase):
         missing_code_response = self.create_item(
             "m3508电机", is_serialized=True, serial_numbers=[]
         )
-        self.assertContains(missing_code_response, "单件设备必须填写 1 个编码")
+        self.assertContains(missing_code_response, "单件设备必须填写 1 个设备编码")
         self.assertFalse(Item.objects.exists())
 
         response = self.create_item(
@@ -124,7 +128,7 @@ class SerializedInventoryTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "单件设备必须填写 2 个编码")
+        self.assertContains(response, "单件设备必须填写 2 个设备编码")
         self.assertContains(response, "KEEP-001")
         self.assertContains(response, "A-01")
         self.assertContains(response, "测试品牌")
@@ -289,3 +293,70 @@ class SerializedInventoryTests(TestCase):
         )
         self.assertContains(keyword_response, matching.name)
         self.assertNotContains(keyword_response, other.name)
+
+    def test_inventory_and_asset_lists_are_paginated(self):
+        Item.objects.bulk_create(
+            [
+                Item(name=f"分页物品-{index:02d}", quantity=1, created_by=self.user)
+                for index in range(25)
+            ]
+        )
+
+        first_page = self.client.get(reverse("inventory_list"))
+        second_page = self.client.get(reverse("inventory_list"), {"page": 2})
+        self.assertEqual(len(first_page.context["items"]), 20)
+        self.assertEqual(len(second_page.context["items"]), 5)
+
+        serialized_item = Item.objects.create(
+            name="编码分页设备",
+            quantity=25,
+            is_serialized=True,
+            created_by=self.user,
+        )
+        Asset.objects.bulk_create(
+            [
+                Asset(item=serialized_item, serial_number=f"PAGE-{index:02d}")
+                for index in range(25)
+            ]
+        )
+        detail_page = self.client.get(reverse("item_detail", args=[serialized_item.id]))
+        detail_page_two = self.client.get(
+            reverse("item_detail", args=[serialized_item.id]), {"asset_page": 2}
+        )
+        self.assertEqual(len(detail_page.context["asset_page"]), 20)
+        self.assertEqual(len(detail_page_two.context["asset_page"]), 5)
+
+    def test_image_upload_rejects_wrong_extension_and_oversized_file(self):
+        image_buffer = BytesIO()
+        Image.new("RGB", (2, 2), color="white").save(image_buffer, format="PNG")
+        png_data = image_buffer.getvalue()
+
+        wrong_extension = SimpleUploadedFile(
+            "not-allowed.gif", png_data, content_type="image/gif"
+        )
+        common_data = {
+            "name": "图片校验物品",
+            "quantity": "1",
+            "is_serialized": "0",
+            "purchase_date": "2026-01-01",
+            "valid_period": "12",
+        }
+        response = self.client.post(
+            reverse("create_item"),
+            {**common_data, "location_image": wrong_extension},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Item.objects.filter(name="图片校验物品").exists())
+
+        oversized = SimpleUploadedFile(
+            "large.png",
+            png_data + b"0" * (5 * 1024 * 1024),
+            content_type="image/png",
+        )
+        response = self.client.post(
+            reverse("create_item"),
+            {**common_data, "location_image": oversized},
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "图片大小不能超过 5MB")
+        self.assertFalse(Item.objects.filter(name="图片校验物品").exists())

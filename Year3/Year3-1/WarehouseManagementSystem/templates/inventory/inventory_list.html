@@ -222,11 +222,14 @@ selected
 
 <td>
 {% if item.is_serialized %}
-    {% for asset in item.assets.all %}
+    {% for asset in item.asset_preview %}
         {{asset.serial_number}}{% if not forloop.last %}、{% endif %}
     {% empty %}
         未录入
     {% endfor %}
+    {% if item.remaining_asset_count %}
+        等 {{item.asset_total}} 个编码
+    {% endif %}
 {% else %}
     -
 {% endif %}
@@ -328,5 +331,19 @@ href="{% url 'item_detail' item.id %}">
 </table>
 
 </div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+<nav class="pagination" aria-label="库存分页">
+    {% if page_obj.has_previous %}
+    <a href="?{% if pagination_query %}{{pagination_query}}&{% endif %}page={{page_obj.previous_page_number}}">上一页</a>
+    {% endif %}
+
+    <span>第 {{page_obj.number}} / {{page_obj.paginator.num_pages}} 页，共 {{page_obj.paginator.count}} 条</span>
+
+    {% if page_obj.has_next %}
+    <a href="?{% if pagination_query %}{{pagination_query}}&{% endif %}page={{page_obj.next_page_number}}">下一页</a>
+    {% endif %}
+</nav>
+{% endif %}
 
 {% endblock %}

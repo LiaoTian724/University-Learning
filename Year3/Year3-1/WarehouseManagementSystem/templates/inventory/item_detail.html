@@ -88,7 +88,7 @@
 
 <h2>单件设备明细</h2>
 
-<p>设备编码档案共 {{item.assets.count}} 条；当前可用库存 {{item.quantity}} 件。</p>
+<p>设备编码档案共 {{asset_page.paginator.count}} 条；当前可用库存 {{item.quantity}} 件。</p>
 
 <div class="detail-scroll">
 <table border="1" style="width:100%;">
@@ -98,7 +98,7 @@
             <th>位置</th>
             <th>录入时间</th>
       </tr>
-      {% for asset in item.assets.all %}
+      {% for asset in asset_page %}
       <tr>
             <td>{{asset.serial_number}}</td>
             <td>{{asset.get_status_display}}</td>
@@ -112,6 +112,18 @@
       {% endfor %}
 </table>
 </div>
+
+{% if asset_page.paginator.num_pages > 1 %}
+<nav class="pagination" aria-label="设备编码分页">
+      {% if asset_page.has_previous %}
+      <a href="?asset_page={{asset_page.previous_page_number}}">上一页</a>
+      {% endif %}
+      <span>编码第 {{asset_page.number}} / {{asset_page.paginator.num_pages}} 页</span>
+      {% if asset_page.has_next %}
+      <a href="?asset_page={{asset_page.next_page_number}}">下一页</a>
+      {% endif %}
+</nav>
+{% endif %}
 {% endif %}
 
 

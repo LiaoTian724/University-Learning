@@ -917,6 +917,22 @@ td {
 
 }
 
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 18px 0;
+    flex-wrap: wrap;
+}
+
+.pagination a {
+    padding: 7px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
 .record-container th,
 .detail-scroll th {
     position: sticky;

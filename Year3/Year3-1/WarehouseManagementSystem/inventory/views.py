@@ -2,31 +2,25 @@ from accounts.models import UserProfile
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.db import transaction
-from .models import Item, ItemAttribute, StockRecord, Asset
+from django.core.paginator import Paginator
+from .models import Item, StockRecord, Asset
+from .forms import (
+    CreateItemForm,
+    DecreaseStockForm,
+    ExistingStockForm,
+    IncreaseStockForm,
+)
+from .services import (
+    add_existing_item_stock,
+    create_inventory_item,
+    decrease_item_stock,
+    increase_item_stock,
+)
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
-
-
-def get_serial_numbers(request):
-    """读取并清理用户提交的单件设备编码。"""
-    return [
-        serial.strip()
-        for serial in request.POST.getlist("serial_numbers")
-        if serial.strip()
-    ]
-
-
-def validate_serial_numbers(serial_numbers, quantity):
-    """确保单件设备数量与编码一一对应，且一次提交中没有重复编码。"""
-    if len(serial_numbers) != quantity:
-        return f"单件设备必须填写 {quantity} 个编码"
-
-    if len(set(serial_numbers)) != len(serial_numbers):
-        return "设备编码不能重复"
-
-    return None
 
 
 def admin_required(request):
@@ -83,12 +77,23 @@ def index(request):
         return redirect("inventory_list")
 
 
-from django.db.models import Q
+from django.db.models import Q, Count
 
 
 @login_required
 def inventory_list(request):
     items = get_filtered_items(request)
+    paginator = Paginator(items.order_by("name", "id"), 20)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    for item in page_obj.object_list:
+        item.asset_preview = list(item.assets.order_by("serial_number")[:3])
+        item.remaining_asset_count = max(
+            item.asset_total - len(item.asset_preview), 0
+        )
+
+    pagination_params = request.GET.copy()
+    pagination_params.pop("page", None)
 
     # =====================
     # 获取所有类别
@@ -108,7 +113,9 @@ def inventory_list(request):
         "inventory/inventory_list.html",
         {
             "username": username,
-            "items": items,
+            "items": page_obj.object_list,
+            "page_obj": page_obj,
+            "pagination_query": pagination_params.urlencode(),
             "keyword": keyword,
             "serial_number": serial_number,
             "category": category,
@@ -163,88 +170,34 @@ def create_item(request):
 
             item = get_object_or_404(Item, id=item_id)
 
-            quantity_str = request.POST.get("quantity", "")
-
-            if not quantity_str.isdigit() or int(quantity_str) <= 0:
-
-                messages.error(request, "请输入正确的增加数量")
-
+            form = ExistingStockForm(request.POST, request.FILES, item=item)
+            if not form.is_valid():
+                messages.error(request, next(iter(form.errors.values()))[0])
                 return render(
                     request,
                     "inventory/create_item.html",
-                    {
-                        **form_context,
-                        "name": request.POST.get("name"),
-                        "category": request.POST.get("category"),
-                        "quantity": quantity_str,
-                        "location": request.POST.get("location"),
-                    },
+                    {**form_context, "warning": True, "same_item": item},
                 )
 
-            quantity = int(quantity_str)
-
-            added_assets = []
-
-            if item.is_serialized:
-                serial_numbers = get_serial_numbers(request)
-                serial_error = validate_serial_numbers(serial_numbers, quantity)
-
-                if not serial_error and Asset.objects.filter(
-                    serial_number__in=serial_numbers
-                ).exists():
-                    serial_error = "设备编码已存在"
-
-                if serial_error:
-                    messages.error(request, serial_error)
-                    return render(
-                        request,
-                        "inventory/create_item.html",
-                        {
-                            **form_context,
-                            "warning": True,
-                            "same_item": item,
-                        },
-                    )
-
-            item.quantity += quantity
-            # 如果是单件设备管理
-            if item.is_serialized:
-                for serial in serial_numbers:
-                    added_assets.append(
-                        Asset.objects.create(item=item, serial_number=serial)
-                    )
-
-            image = request.FILES.get("location_image")
-
-            if image:
-                item.current_location_image = image
-
-            item.save()
-
-            if item.is_serialized:
-                for index, asset in enumerate(added_assets):
-                    StockRecord.objects.create(
-                        user=request.user,
-                        item=item,
-                        asset=asset,
-                        type="IN",
-                        quantity=1,
-                        reason="PURCHASE",
-                        location_image=image if index == 0 else None,
-                    )
-            else:
-                StockRecord.objects.create(
+            try:
+                item = add_existing_item_stock(
+                    item_id=item.id,
                     user=request.user,
-                    item=item,
-                    type="IN",
-                    quantity=quantity,
-                    reason="PURCHASE",
-                    location_image=image,
+                    quantity=form.cleaned_data["quantity"],
+                    serial_numbers=form.cleaned_data["serial_numbers"],
+                    image=form.cleaned_data.get("location_image"),
+                )
+            except ValidationError as exc:
+                messages.error(request, exc.messages[0])
+                return render(
+                    request,
+                    "inventory/create_item.html",
+                    {**form_context, "warning": True, "same_item": item},
                 )
 
             messages.success(
                 request,
-                f"成功增加库存：{item.name} +{quantity}，当前库存 {item.quantity}",
+                f"成功增加库存：{item.name} +{form.cleaned_data['quantity']}，当前库存 {item.quantity}",
             )
 
             return redirect("inventory_list")
@@ -253,220 +206,24 @@ def create_item(request):
         # 创建新物品
         # =====================
 
-        name = request.POST.get("name", "").strip()
+        form = CreateItemForm(request.POST, request.FILES)
+        if not form.is_valid():
+            messages.error(request, next(iter(form.errors.values()))[0])
+            return render(request, "inventory/create_item.html", form_context)
 
-        category = request.POST.get("category", "")
-
-        quantity_str = request.POST.get("quantity", "")
-
-        location = request.POST.get("location", "")
-
-        if not name:
-
-            messages.error(request, "物品名称不能为空")
-
-            return render(
-                request,
-                "inventory/create_item.html",
-                {
-                    **form_context,
-                    "name": name,
-                    "category": category,
-                    "quantity": quantity_str,
-                    "location": location,
-                    "item_names": Item.objects.values_list(
-                        "name", flat=True
-                    ).distinct(),
-                    "categories": Item.objects.values_list(
-                        "category", flat=True
-                    ).distinct(),
-                },
-            )
-
-        if not quantity_str.isdigit() or int(quantity_str) <= 0:
-
-            messages.error(request, "请输入正确的库存数量")
-
-            # return render(request, "inventory/create_item.html")
-            return render(
-                request,
-                "inventory/create_item.html",
-                {
-                    **form_context,
-                    "name": name,
-                    "category": category,
-                    "quantity": quantity_str,
-                    "location": location,
-                    "item_names": Item.objects.values_list(
-                        "name", flat=True
-                    ).distinct(),
-                    "categories": Item.objects.values_list(
-                        "category", flat=True
-                    ).distinct(),
-                },
-            )
-
-        quantity = int(quantity_str)
-
-        is_serialized = request.POST.get("is_serialized") == "1"
-        serial_numbers = get_serial_numbers(request)
-
-        if is_serialized:
-            serial_error = validate_serial_numbers(serial_numbers, quantity)
-
-            if not serial_error and Asset.objects.filter(
-                serial_number__in=serial_numbers
-            ).exists():
-                serial_error = "设备编码已存在"
-
-            if serial_error:
-                messages.error(request, serial_error)
-                return render(
-                    request,
-                    "inventory/create_item.html",
-                    {
-                        **form_context,
-                        "name": name,
-                        "category": category,
-                        "quantity": quantity_str,
-                        "location": location,
-                        "is_serialized": True,
-                        "item_names": Item.objects.values_list(
-                            "name", flat=True
-                        ).distinct(),
-                        "categories": Item.objects.values_list(
-                            "category", flat=True
-                        ).distinct(),
-                    },
-                )
-
-        purchase_date_str = request.POST.get("purchase_date")
-
-        valid_period_str = request.POST.get("valid_period")
-
-        expiry_date_str = request.POST.get("expiry_date")
-
-        purchase_date = None
-        valid_period = None
-        expiry_date = None
-
-        try:
-
-            if purchase_date_str:
-
-                purchase_date = datetime.strptime(purchase_date_str, "%Y-%m-%d").date()
-
-            if valid_period_str:
-
-                if not valid_period_str.isdigit():
-
-                    messages.error(request, "有效期必须是正整数")
-
-                    return render(
-                        request,
-                        "inventory/create_item.html",
-                        {
-                            **form_context,
-                            "name": name,
-                            "category": category,
-                            "quantity": quantity_str,
-                            "location": location,
-                            "purchase_date": purchase_date_str,
-                            "valid_period": valid_period_str,
-                            "expiry_date": expiry_date_str,
-                        },
-                    )
-
-                valid_period = int(valid_period_str)
-
-            if expiry_date_str:
-
-                expiry_date = datetime.strptime(expiry_date_str, "%Y-%m-%d").date()
-
-        except ValueError:
-
-            messages.error(request, "日期格式错误")
-
-            return render(
-                request,
-                "inventory/create_item.html",
-                {
-                    **form_context,
-                    "name": name,
-                    "category": category,
-                    "quantity": quantity_str,
-                    "location": location,
-                    "purchase_date": purchase_date_str,
-                    "valid_period": valid_period_str,
-                    "expiry_date": expiry_date_str,
-                },
-            )
-
-        input_count = sum(
-            [
-                purchase_date is not None,
-                valid_period is not None,
-                expiry_date is not None,
-            ]
-        )
-
-        if input_count < 2:
-
-            messages.error(request, "购买时间、有效期、失效时间至少填写两个")
-
-            return render(
-                request,
-                "inventory/create_item.html",
-                {
-                    **form_context,
-                    "name": name,
-                    "category": category,
-                    "quantity": quantity_str,
-                    "location": location,
-                    "purchase_date": purchase_date_str,
-                    "valid_period": valid_period_str,
-                    "expiry_date": expiry_date_str,
-                    "item_names": Item.objects.values_list(
-                        "name", flat=True
-                    ).distinct(),
-                    "categories": Item.objects.values_list(
-                        "category", flat=True
-                    ).distinct(),
-                },
-            )
-
+        name = form.cleaned_data["name"]
+        category = form.cleaned_data["category"]
+        quantity = form.cleaned_data["quantity"]
+        quantity_str = str(quantity)
+        is_serialized = form.cleaned_data["is_serialized"]
+        serial_numbers = form.cleaned_data["serial_numbers"]
+        location = form.cleaned_data["location"]
         purchase_date, valid_period, expiry_date = calculate_expiry(
-            purchase_date, valid_period, expiry_date
+            form.cleaned_data.get("purchase_date"),
+            form.cleaned_data.get("valid_period"),
+            form.cleaned_data.get("expiry_date"),
         )
-
-        if purchase_date and expiry_date:
-
-            if expiry_date < purchase_date:
-
-                messages.error(request, "失效日期不能早于购买日期")
-
-                return render(
-                    request,
-                    "inventory/create_item.html",
-                    {
-                        **form_context,
-                        "name": name,
-                        "category": category,
-                        "quantity": quantity_str,
-                        "location": location,
-                        "purchase_date": purchase_date_str,
-                        "valid_period": valid_period_str,
-                        "expiry_date": expiry_date_str,
-                        "item_names": Item.objects.values_list(
-                            "name", flat=True
-                        ).distinct(),
-                        "categories": Item.objects.values_list(
-                            "category", flat=True
-                        ).distinct(),
-                    },
-                )
-
-        image = request.FILES.get("location_image")
+        image = form.cleaned_data.get("location_image")
 
         # =====================
         # 检查重复物品
@@ -502,12 +259,6 @@ def create_item(request):
                     "categories": Item.objects.values_list(
                         "category", flat=True
                     ).distinct(),
-                    "purchase_date": purchase_date_str,
-                    "valid_period": valid_period_str,
-                    "expiry_date": expiry_date_str,
-                    # 保留动态属性
-                    "attribute_keys": request.POST.getlist("attribute_key"),
-                    "attribute_values": request.POST.getlist("attribute_value"),
                 },
             )
 
@@ -515,66 +266,23 @@ def create_item(request):
         # 创建新物品
         # =====================
 
-        item = Item.objects.create(
+        item = create_inventory_item(
+            user=request.user,
             name=name,
             category=category,
             quantity=quantity,
             is_serialized=is_serialized,
             location=location,
-            created_by=request.user,
             purchase_date=purchase_date,
             valid_period=valid_period,
             expiry_date=expiry_date,
-            current_location_image=image,
-            last_modified_by=request.user,
+            serial_numbers=serial_numbers,
+            attributes=zip(
+                request.POST.getlist("attribute_key"),
+                request.POST.getlist("attribute_value"),
+            ),
+            image=image,
         )
-
-        # =====================
-        # 保存动态属性
-        # =====================
-
-        keys = request.POST.getlist("attribute_key")
-
-        values = request.POST.getlist("attribute_value")
-
-        for key, value in zip(keys, values):
-
-            if key and value:
-
-                ItemAttribute.objects.create(item=item, key=key, value=value)
-
-        created_assets = []
-
-        if item.is_serialized:
-            for serial in serial_numbers:
-                created_assets.append(
-                    Asset.objects.create(item=item, serial_number=serial)
-                )
-
-        # =====================
-        # 首次入库记录
-        # =====================
-
-        if item.is_serialized:
-            for index, asset in enumerate(created_assets):
-                StockRecord.objects.create(
-                    user=request.user,
-                    item=item,
-                    asset=asset,
-                    type="IN",
-                    quantity=1,
-                    reason="INITIAL",
-                    location_image=image if index == 0 else None,
-                )
-        else:
-            StockRecord.objects.create(
-                user=request.user,
-                item=item,
-                type="IN",
-                quantity=quantity,
-                reason="INITIAL",
-                location_image=image,
-            )
 
         messages.success(request, f"物品 {item.name} 创建成功，库存 {quantity}")
 
@@ -679,6 +387,9 @@ def item_detail(request, id):
     item = get_object_or_404(Item, id=id)
 
     records = StockRecord.objects.filter(item=item).order_by("-created_time")
+    asset_page = Paginator(item.assets.order_by("serial_number"), 20).get_page(
+        request.GET.get("asset_page")
+    )
 
     return render(
         request,
@@ -687,6 +398,7 @@ def item_detail(request, id):
             "item": item,
             # 最近操作记录
             "records": records,
+            "asset_page": asset_page,
             # "records": records[:10],
         },
     )
@@ -760,128 +472,32 @@ def increase_stock(request, id):
 
         return HttpResponse("没有权限")
 
+    item = get_object_or_404(Item, id=id)
+
     if request.method == "POST":
-
-        # =====================
-        # 数量检查
-        # =====================
-
-        try:
-
-            quantity = int(request.POST.get("quantity", 0))
-
-        except ValueError:
-
-            messages.error(request, "请输入正确的增加数量")
-
+        form = IncreaseStockForm(request.POST, request.FILES, item=item)
+        if not form.is_valid():
+            messages.error(request, next(iter(form.errors.values()))[0])
             return redirect("increase_stock", id=id)
 
-        with transaction.atomic():
-
-            # =====================
-            # 加锁，防止多人同时修改库存
-            # =====================
-
-            item = get_object_or_404(Item.objects.select_for_update(), id=id)
-
-            if quantity <= 0:
-
-                messages.error(request, "增加数量必须大于0")
-
-                return redirect("increase_stock", id=item.id)
-
-            # =====================
-            # 获取入库信息
-            # =====================
-
-            reason = request.POST.get("reason", "")
-
-            image = request.FILES.get("location_image")
-
-            if image:
-
-                item.current_location_image = image
-
-            # =====================
-            # 修改库存
-            # =====================
-
-            if item.is_serialized:
-                serial_numbers = get_serial_numbers(request)
-                serial_error = validate_serial_numbers(serial_numbers, quantity)
-                stocked_assets = []
-                existing_assets = {
-                    asset.serial_number: asset
-                    for asset in Asset.objects.select_for_update().filter(
-                        serial_number__in=serial_numbers
-                    )
-                }
-
-                if not serial_error:
-                    for serial in serial_numbers:
-                        existing_asset = existing_assets.get(serial)
-                        can_return = (
-                            reason == "RETURN"
-                            and existing_asset
-                            and existing_asset.item_id == item.id
-                            and existing_asset.status == "BORROWED"
-                        )
-                        if existing_asset and not can_return:
-                            serial_error = f"设备编码 {serial} 已存在或不可入库"
-                            break
-
-                if serial_error:
-                    messages.error(request, serial_error)
-                    return redirect("increase_stock", id=item.id)
-
-                for serial in serial_numbers:
-                    existing_asset = existing_assets.get(serial)
-                    if existing_asset:
-                        existing_asset.status = "AVAILABLE"
-                        existing_asset.save(update_fields=["status"])
-                        stocked_assets.append(existing_asset)
-                    else:
-                        stocked_assets.append(
-                            Asset.objects.create(item=item, serial_number=serial)
-                        )
-
-            item.quantity += quantity
-
-            item.last_modified_by = request.user
-            item.save()
-
-            # =====================
-            # 创建库存流水
-            # =====================
-
-            if item.is_serialized:
-                for index, asset in enumerate(stocked_assets):
-                    StockRecord.objects.create(
-                        user=request.user,
-                        item=item,
-                        asset=asset,
-                        type="IN",
-                        quantity=1,
-                        reason=reason,
-                        location_image=image if index == 0 else None,
-                    )
-            else:
-                StockRecord.objects.create(
-                    user=request.user,
-                    item=item,
-                    type="IN",
-                    quantity=quantity,
-                    reason=reason,
-                    location_image=image,
-                )
+        try:
+            item = increase_item_stock(
+                item_id=id,
+                user=request.user,
+                quantity=form.cleaned_data["quantity"],
+                reason=form.cleaned_data["reason"],
+                serial_numbers=form.cleaned_data["serial_numbers"],
+                image=form.cleaned_data.get("location_image"),
+            )
+        except ValidationError as exc:
+            messages.error(request, exc.messages[0])
+            return redirect("increase_stock", id=id)
 
         return redirect("item_detail", id=item.id)
 
     # =====================
     # GET 请求：显示页面
     # =====================
-
-    item = get_object_or_404(Item, id=id)
 
     return render(request, "inventory/increase_stock.html", {"item": item})
 
@@ -897,116 +513,30 @@ def decrease_stock(request, id):
 
         return HttpResponse("没有权限!")
 
+    item = get_object_or_404(Item, id=id)
+
     if request.method == "POST":
+        form = DecreaseStockForm(request.POST, request.FILES, item=item)
+        if not form.is_valid():
+            messages.error(request, next(iter(form.errors.values()))[0])
+            return redirect("decrease_stock", id=id)
 
         try:
-            quantity = int(request.POST.get("quantity", ""))
-
-        except (TypeError, ValueError):
-
-            messages.error(request, "请输入正确数量")
-
+            item = decrease_item_stock(
+                item_id=id,
+                user=request.user,
+                quantity=form.cleaned_data["quantity"],
+                reason=form.cleaned_data["reason"],
+                remark=form.cleaned_data["remark"],
+                serial_numbers=form.cleaned_data["serial_numbers"],
+                image=form.cleaned_data.get("location_image"),
+            )
+        except ValidationError as exc:
+            messages.error(request, exc.messages[0])
             return redirect("decrease_stock", id=id)
-
-        if quantity <= 0:
-
-            messages.error(request, "数量必须大于0")
-
-            return redirect("decrease_stock", id=id)
-
-        reason = request.POST.get("reason", "")
-
-        valid_reasons = {"BORROW", "SCRAP", "DAMAGE", "TRANSFER_OUT", "CHECK"}
-        if reason not in valid_reasons:
-            messages.error(request, "请选择正确的减少原因")
-            return redirect("decrease_stock", id=id)
-
-        remark = request.POST.get("remark", "").strip()
-        if not remark:
-            messages.error(request, "请填写本次库存减少的用途")
-            return redirect("decrease_stock", id=id)
-
-        image = request.FILES.get("location_image")
-
-        with transaction.atomic():
-
-            item = get_object_or_404(Item.objects.select_for_update(), id=id)
-
-            # 防止库存不足
-
-            if quantity > item.quantity:
-
-                messages.error(request, "减少数量不能超过当前库存")
-
-                return redirect("decrease_stock", id=item.id)
-
-            selected_assets = []
-
-            if item.is_serialized:
-                serial_numbers = get_serial_numbers(request)
-                serial_error = validate_serial_numbers(serial_numbers, quantity)
-
-                if not serial_error:
-                    selected_assets = list(
-                        Asset.objects.select_for_update().filter(
-                            item=item,
-                            serial_number__in=serial_numbers,
-                            status="AVAILABLE",
-                        )
-                    )
-                    if len(selected_assets) != quantity:
-                        serial_error = "存在不属于当前物品或当前不可用的设备编码"
-
-                if serial_error:
-                    messages.error(request, serial_error)
-                    return redirect("decrease_stock", id=item.id)
-
-            item.quantity -= quantity
-
-            if image:
-
-                item.current_location_image = image
-            item.last_modified_by = request.user
-            item.save()
-
-            if item.is_serialized:
-                status_by_reason = {
-                    "BORROW": "BORROWED",
-                    "DAMAGE": "DAMAGED",
-                }
-                new_status = status_by_reason.get(reason, "OUT")
-
-                for index, asset in enumerate(selected_assets):
-                    asset.status = new_status
-                    asset.save(update_fields=["status"])
-                    StockRecord.objects.create(
-                        user=request.user,
-                        item=item,
-                        asset=asset,
-                        type="OUT",
-                        quantity=1,
-                        reason=reason,
-                        remark=remark,
-                        location_image=image if index == 0 else None,
-                    )
-            else:
-                StockRecord.objects.create(
-                    user=request.user,
-                    item=item,
-                    type="OUT",
-                    quantity=quantity,
-                    reason=reason,
-                    remark=remark,
-                    location_image=image,
-                )
 
         messages.success(request, "库存减少成功")
-
         return redirect("item_detail", id=item.id)
-
-    else:
-
-        item = Item.objects.get(id=id)
 
     return render(
         request,
@@ -1205,7 +735,7 @@ def stock_records(request, id):
 
 def get_filtered_items(request):
 
-    items = Item.objects.prefetch_related("assets").all()
+    items = Item.objects.annotate(asset_total=Count("assets", distinct=True))
 
     keyword = request.GET.get("keyword", "").strip()
 
