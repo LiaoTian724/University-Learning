@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>for of Demo</title>
+</head>
+
+<body>
+
+
+<script>
+    let numbers = [5, 3, 2, 4, 1];
+
+    // 遍历数组
+    for (let number of numbers) {
+        console.log(number);
+    }
+
+    // 这里不会修改原数组
+    for (let number of numbers) {
+        number *= 2;
+    }
+
+    console.log(numbers);
+</script>
+
+</body>
+</html>

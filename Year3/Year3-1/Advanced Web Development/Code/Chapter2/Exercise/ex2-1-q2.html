@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <title>Exercise 2.1 Question 2</title>
+    </head>
+    <body>
+        <script>
+            // 2-1 Q2. The following program asks the user a number `n`, 
+            // and print a `n` by `n` squares to console like this:
+            // * * * * 
+            // * * * * 
+            // * * * * 
+            // * * * * 
+            //
+            // Modify the program to print an empty square like this:
+            // * * * * 
+            // *     * 
+            // *     * 
+            // * * * * 
+
+            let s = window.prompt('Enter size of the square');
+            /* convert the input string into a number */
+            let n = parseInt(s);
+
+            // /* build a line with n stars */
+            // let line = '';
+            // for (let i = 0; i < n; i++) { 
+            //     line = line + '* '; 
+            // }
+
+            // /* build a square with n lines */
+            // let sqr = '';
+            // for (let i = 0; i < n; i++) { 
+            //     sqr = sqr + line + '\n'; 
+            // }
+
+            let firstRow = "";
+            for (let i = 0; i < n; i++) {
+                firstRow += "* ";
+            }
+            console.log(firstRow);
+
+            for (let i = 0; i < n-2; i++) {
+                let middleRow = "* ";
+                for (let j = 0; j < n-2; j++) {
+                        middleRow += "  ";
+                }
+                middleRow += "* ";
+                console.log(middleRow);
+            }
+
+            let lastRow = "";
+            for (let i = 0; i < n; i++) {
+                lastRow += "* ";
+            }
+            console.log(lastRow);
+        </script>
+    </body>
+</html>

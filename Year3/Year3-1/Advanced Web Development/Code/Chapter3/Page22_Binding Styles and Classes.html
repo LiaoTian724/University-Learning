@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vue Style Binding</title>
+
+    <style>
+        .hot {
+            color: red;
+            font-size: 24px;
+        }
+
+        .cold {
+            color: blue;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+
+        <p>
+            Temperature: <span :style="styleTemperature"> {{temperature}} °C </span>
+        </p>
+
+        <p>
+            Rain: {{ rain }}%
+        </p>
+
+        <!-- 根据温度决定 class -->
+        <p :class="{ hot: temperature >= 30, cold: temperature < 30 }">
+            Temperature status
+        </p>
+
+        <!-- 根据温度决定图片 -->
+        <img :src="temperature >= 14? highTempImage : lowTempImage" width="120">
+
+        <br><br>
+
+        <button @click="temperature = 35">
+            Set temperature to 35
+        </button>
+
+        <button @click="temperature = 10">
+            Set temperature to 10
+        </button>
+
+        <button @click="temperature = 20">
+            Set temperature to 20
+        </button>
+
+    </div>
+
+
+    <script src="https://unpkg.com/vue@3"></script>
+    <script>
+        const options = {
+            data() {
+                return {
+                    temperature: 20, 
+                    rain: 50,
+
+                    styleTemperature: {
+                        fontWeight: "bold",
+                        color: "orange"
+                    },
+
+                    highTempImage: "image/high-temp.png",
+                    lowTempImage: "image/low-temp.png"
+                };
+            }
+        };
+
+        Vue.createApp(options).mount("#app");
+    </script>
+
+</body>
+
+</html>

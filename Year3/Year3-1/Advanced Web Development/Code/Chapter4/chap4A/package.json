@@ -1,0 +1,10 @@
+{
+  "name": "chap4-1",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "prompts": "^2.4.2",
+    "systeminformation": "^5.12.1"
+  },
+  "author": "Philip Lei"
+}

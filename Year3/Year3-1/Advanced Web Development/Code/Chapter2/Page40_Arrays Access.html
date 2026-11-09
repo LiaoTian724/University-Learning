@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Array Demo</title>
+</head>
+
+<body>
+
+
+
+<script>
+    // length
+    let fruits = ["apple", "orange", "banana"];
+
+    console.log(fruits.length);
+    console.log(fruits[fruits.length - 1]);
+
+
+    // destructuring
+    let a, b;
+
+    [a, b] = [1, 2, 3, 4, 5];
+
+    console.log(a); // 1
+    console.log(b); // 2
+
+
+    // skip elements
+    [, , a, , b] = [1, 2, 3, 4, 5];
+
+    console.log(a); // 3
+    console.log(b); // 5
+
+
+    // rest
+    let rest;
+
+    [a, b, ...rest] = [2, 3, 5, 7, 11, 13];
+
+    console.log(a);    // 2
+    console.log(b);    // 3
+    console.log(rest); // [5, 7, 11, 13]
+</script>
+
+</body>
+</html>

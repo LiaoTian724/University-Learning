@@ -1,0 +1,70 @@
+<html>
+
+<head>
+    <title>Exercise 2.7 Question 1</title>
+</head>
+
+<body>
+    <script>
+        // Define a class Circle that can be used in the following ways.
+        // Hints: the class contains a constructor, a method area to 
+        // calculate the area of the circle, a method toString to convert 
+        // the object into string, and a method move(x,y) to move the 
+        // center of the circle to the given location.
+
+        class Circle {
+            // your work here
+            constructor(x, y, r) {
+                this.x = x;
+                this.y = y;
+                this.r = r;
+            }
+            area() {
+                return Math.PI * this.r * this.r;
+            }
+            toString() {
+                return `a circle at (${this.x}, ${this.y}) of radius ${this.r}`;
+            }
+            move(x, y) {
+                this.x = x;
+                this.y = y;
+            }
+        }
+
+        let c = new Circle(1, 2, 10);
+        let a = c.area();
+        console.log(`The area is ${a}`);
+        // this calls c.toString()
+        console.log(`c is ${c}`);
+        // c is a circle at (1, 2) of radius 10
+        c.move(-1, 0);
+        console.log(`c is ${c}`);
+        // c is a circle at (-1, 0) of radius 10
+
+        // Define a function contains(c1, c2) that takes two Circle 
+        // objects as parameters and determine whether the first circle 
+        // contains the second completely.
+
+        // check whether the Circle c1 fully contains the Circle c2
+        function contains(c1, c2) {
+            // your work here
+            let distance = ((c1.x - c2.x)**2 + (c1.y - c2.y)**2)**0.5;
+            let range = c1.r - c2.r
+            if (distance < range) {
+                return true;
+            }
+            return false;
+        }
+
+        // Test your work with the following.
+
+        let c1 = new Circle(0, 0, 10);
+        let c2 = new Circle(3, 4, 4);
+        let c3 = new Circle(3, 4, 8);
+        console.log('c1 contains c2? ', contains(c1, c2));
+        console.log('c1 contains c3? ', contains(c1, c3));
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vue Calculator</title>
+</head>
+
+<body>
+
+    <div id="app">
+
+        <p>This example adds two numbers.</p>
+
+        <p>
+            a:
+            <input type="text" v-model.number="a">
+        </p>
+
+        <p>
+            b:
+            <input type="text" v-model.number="b">
+        </p>
+
+        <p>
+            <button type="button" @click="add">
+                Calculate!
+            </button>
+        </p>
+
+        <p>
+            a + b = <span>{{ ans }}</span>
+        </p>
+
+    </div>
+
+
+    <!-- 引入 Vue 3 -->
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <script>
+        const options = {
+
+            data() {
+                return {
+                    a: null,
+                    b: null,
+                    ans: null
+                };
+            },
+
+            methods: {
+                add() {
+                    this.ans = this.a + this.b;
+                }
+            }
+
+        };
+
+        // .mount("#app") 意思是：把这个 Vue 应用连接到 HTML 中 id="app" 的元素
+        const vm = Vue.createApp(options).mount("#app");
+    </script>
+
+</body>
+
+</html>

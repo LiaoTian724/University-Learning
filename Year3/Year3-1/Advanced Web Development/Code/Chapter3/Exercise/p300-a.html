@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>First example</title>
+</head>
+
+<body>
+  <div id="app">
+    <p>This example adds two numbers.</p>
+    <p>a: <input type="text" id="numA" value=""></p>
+    <p>b: <input type="text" id="numB" value=""></p>
+    <p><button type="button" id="btnAdd">Calculate!</button></p>
+    <p>a+b = <span id="ans"></span></p>
+  </div>
+
+  <!-- embedded JavaScript program -->
+  <script>
+    const numA = document.getElementById("numA");
+    const numB = document.getElementById("numB");
+    const ans = document.getElementById("ans");
+    const btnAdd = document.getElementById("btnAdd");
+
+    btnAdd.addEventListener("click", function () {
+      ans.innerHTML = parseFloat(numA.value) + parseFloat(numB.value)
+    });
+  </script>
+</body>
+
+</html>

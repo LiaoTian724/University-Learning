@@ -1,0 +1,45 @@
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <script>
+
+        let healthInfos = [
+            { name: "Tom Chan", weight: 70.2, height: 179 },
+            { name: "Zhang San", weight: 81, height: 175 },
+            { name: "Tai Man Chan", weight: 65, height: 150 },
+            { name: "Michael James", weight: 48.9, height: 156 },
+            { name: "Jimmy Lei", weight: 68, height: 183 },
+        ]
+
+
+        function getBMI(person) {
+            let bmi = person.weight / (person.height / 100) ** 2;
+            return bmi;
+        }
+
+        function compareByBMI(a, b) {
+            let bmiA = getBMI(a);
+            let bmiB = getBMI(b);
+            if (bmiA < bmiB) {
+                return -1;
+            } else if (bmiA > bmiB) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+
+        healthInfos.sort(compareByBMI);
+
+
+        for (let person of healthInfos) {
+            console.log(`${person.name}: ${getBMI(person)}`);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vue ViewModel Example</title>
+</head>
+
+<body>
+
+
+    <div id="app">
+
+            <img :src="conditionURL"
+                    style="float: left; padding-right: 1em; width: 100px;">
+            <div>
+                Temperature: {{ temperature }} °C
+            </div>
+
+            <div>
+                Rain: {{ rain }}%
+            </div>
+    </div>
+
+
+
+     <script src="https://unpkg.com/vue@3"></script>
+     <script>
+
+        const options = {
+            data() {
+                return {
+                    temperature: 28,
+                    rain: 20,
+                    conditionURL: "image/sunny.png"
+                };
+            }
+        };
+
+        const vm = Vue.createApp(options).mount("#app");
+     </script>
+
+</body>
+
+</html>

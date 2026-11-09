@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Element Plus Example</title>
+
+    <link rel="stylesheet"
+          href="https://unpkg.com/element-plus/dist/index.css">
+</head>
+
+<body>
+
+    <div id="app">
+
+        <p>Rating: {{ value }}</p>
+
+        <el-rate
+            v-model="value"
+            :colors="colors"
+            size="large">
+        </el-rate>
+
+    </div>
+
+    <script src="https://unpkg.com/vue@3"></script>
+    <script src="https://unpkg.com/element-plus"></script>
+
+    <script>
+        const options = {
+
+            components: {
+                ElRate: ElementPlus.ElRate
+            },
+
+            data() {
+                return {
+                    value: 3,
+                    colors: [
+                        "#99A9BF",
+                        "#F7BA2A",
+                        "#FF9900"
+                    ]
+                };
+            }
+        };
+
+        const vm = Vue.createApp(options).mount("#app");
+    </script>
+
+</body>
+
+</html>

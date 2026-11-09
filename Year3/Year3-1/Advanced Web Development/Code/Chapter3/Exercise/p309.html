@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap 3 example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"> 
+  <style>
+    .try { background-color: lightgreen; color: white; padding: 0px 10px 1px 1px; border-radius: 0px 0px 7px 0px; }
+    table td { padding-right: 2em }
+    table { margin: 0em 1em 0em 0.3em; }
+    
+    .wrapper {
+      display: grid;
+      grid-template-columns: 100px 250px;
+      grid-gap: 10px;
+      padding: 5px;
+      border: 1px solid gray;
+      margin: 1em;
+      padding: 1em 0.5em;
+      width: 500px;
+      box-shadow: 5px 10px 8px #888888;
+    }
+    .wrapper label { margin: 0em 1em 0em 0.3em; }
+</style>
+<!-- loading the Vue v3 JavaScript library from CDN -->    
+<script src="https://unpkg.com/vue@3"></script>
+</head>
+
+<body class="container">
+
+<h1>Example p309</h1>
+
+<p>This example combines the knowledge from previous examples.</p>
+
+<hr>
+
+<div id="app">
+  <p>Weather on {{ date }}   {{time}}</p>
+  <table>
+    <tr v-for='c in city'>
+      <td>{{ c.cityName }}</td><td>{{ c.temperature }}°C</td>
+      <td><img :src='getConditionImage(c.condition)'></td>
+    </tr>
+  </table>
+
+  <!-- input form --> 
+  <div class='wrapper'>
+  <div>City name: </div><input v-model="newEntry.cityName">
+  <div>Temperature: </div><input v-model.number="newEntry.temperature">
+
+  <div>Condition:</div><div>
+      <input type="radio" id="c-sunny" value="sunny" v-model="newEntry.condition">
+      <label for="c-sunny"><img :src="getConditionImage('sunny')"></label>
+      <input type="radio" id="c-cloudy" value="cloudy" v-model="newEntry.condition">
+      <label for="c-cloudy"><img :src="getConditionImage('cloudy')"></label>  
+      <input type="radio" id="c-rainy" value="rainy" v-model="newEntry.condition">
+      <label for="c-rainy"><img :src="getConditionImage('rainy')"></label> 
+    </div>
+    <button @click="addToCityTable">Add city</button>
+  </div>
+  </div>  <!-- wrapper, input form -->
+
+</div>  <!-- app -->
+
+<hr/>
+
+<div style='font-size:50%'>
+  <div>Icons made by <a href="https://www.flaticon.com/authors/vitaly-gorbachev" title="Vitaly Gorbachev">Vitaly Gorbachev</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+</div>
+
+<script>
+// define a Vue options object
+const weather = {
+  data() {
+    return {
+      date: (new Date).toDateString(),
+      time: (new Date).toLocaleTimeString(),
+      city: [
+        { cityName: 'Macau', temperature: 28, condition: 'cloudy' },
+        { cityName: 'Beijing', temperature: 27, condition: 'sunny' },
+        { cityName: 'Shanghai', temperature: 34, condition: 'rainy' }
+      ],
+      newEntry: {
+        cityName: '', temperature: undefined, condition: undefined
+      }
+    }
+  },
+
+  created() {
+    setInterval(() => {
+      this.time = (new Date).toLocaleTimeString();
+    }, 1000);
+    console.log("created");
+  },
+
+  
+  methods: {
+    getConditionImage(cond) { return `./image/${cond}.png` },
+
+    addToCityTable(e) { 
+      // clone the object 'this.newEntry', and append the clone to the 'city' array
+      this.city.push( {...this.newEntry} );
+      // clear the content of the input form
+      this.newEntry = { cityName: '', temperature: undefined, condition: undefined };
+    }
+  }  
+}
+
+// create a Vue component, mounted to the HTML template
+const vm = Vue.createApp(weather).mount('#app')
+</script>
+
+</body>
+</html>

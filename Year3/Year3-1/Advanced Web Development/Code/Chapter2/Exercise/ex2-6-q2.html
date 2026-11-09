@@ -1,0 +1,47 @@
+<html>
+    <head>
+        <title>Exercise 2.6 Question 2</title>
+    </head>
+    <body>
+        <script>
+            // 2-6 Q2. Write an "object literal" that implements the 
+            // "queue" data structure. Use the following template to 
+            // write your solution.
+
+            let q = {
+            // data properties to hold the content of the queue
+            content: [],
+
+            enqueue(elem) {
+                // add 'elem' at the end of queue
+                // your work here
+                this.content.push(elem);
+                
+            },
+            dequeue() {
+                // remove the element at the head of queue, and return the element
+                // your work here
+                return this.content.shift();
+            },
+            count() {
+                // returns the number of elements in the queue
+                // your work here
+                return this.content.length;
+
+            },
+            toString() {
+                // return the content of the queue as string
+                // your work here
+                return this.content.toString();
+
+            }
+            };
+
+            q.enqueue('a'); q.enqueue('b'); q.enqueue('c');
+            console.log(q.dequeue()); // prints 'a'
+            console.log(q.count());   // prints 2
+            q.enqueue('d');
+            console.log(`The queue contains ${q}.`);
+        </script>
+    </body>
+</html>

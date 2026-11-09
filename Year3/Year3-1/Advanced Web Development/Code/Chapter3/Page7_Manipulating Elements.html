@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+
+    <style>
+        .hide {
+            display: none;
+        }
+
+        .redText {
+            color: red;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="one">Hi id1</div>
+    <div id="two">Hi id2</div>
+    <div id="three">Hi id3</div>
+
+    <script>
+        // 找到 id="two" 的元素
+        let element = document.getElementById("two");
+
+        // 1. 修改文字
+        element.innerText = "Bye!";
+
+        // 2. 修改 CSS
+        element.style.color = "blue";
+
+        // 3. 添加一个 class
+        element.classList.add("redText");
+
+        // 4. 修改 attribute
+        element.setAttribute("id", "new");
+
+        console.log(element);
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <title>Exercise 2.1 Question 2</title>
+    </head>
+    <body>
+        <script>
+            // 2-1 Q2. The following program asks the user a number `n`, 
+            // and print a `n` by `n` squares to console like this:
+            // * * * * 
+            // * * * * 
+            // * * * * 
+            // * * * * 
+            //
+            // Modify the program to print an empty square like this:
+            // * * * * 
+            // *     * 
+            // *     * 
+            // * * * * 
+
+            let s = window.prompt('Enter size of the square');
+            /* convert the input string into a number */
+            let n = parseInt(s);
+            
+            let line = '';
+            for(let i = 0; i < n; i++) {
+                for(let j = 0; j < n; j++) {
+                    if(i === 0 || i === n - 1 || j === 0 || j === n - 1) {
+                        line += '* ';
+                    } else {
+                        line += '  ';
+                    }
+                }
+                line += '\n';
+            }
+            
+            console.log(line);
+        </script>
+    </body>
+</html>

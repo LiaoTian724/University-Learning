@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>chap 3 example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="https://unpkg.com/vue@3"></script>
+  <script src="https://unpkg.com/element-plus"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+</head>
+
+<body class="container">
+
+  <h1>Example p321</h1>
+  <p>This example uses the Rate component from the Desktop UI library <a href="https://element-plus.org/"
+      target="_blank">Element Plus</a>.</p>
+
+  <hr>
+
+  <div id="app">
+    <span>Rating: {{ value }}</span>
+    <el-rate v-model="value" :colors="colors" size="large"></el-rate>
+  </div>
+
+  <hr />
+
+  <script>
+    const opts = {
+      components: { ElRate: ElementPlus.ElRate },
+      data() {
+        return {
+          value: 3,
+          colors: ['#99A9BF', '#F7BA2A', '#FF9900']
+        }
+      }
+    };
+
+    const vm = Vue.createApp(opts).mount('#app');
+  </script>
+
+</body>
+
+</html>

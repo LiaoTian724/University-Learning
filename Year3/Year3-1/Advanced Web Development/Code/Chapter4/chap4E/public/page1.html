@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Static files</title>
+</head>
+
+<body>
+  <h1>Sample HTML page</h1>
+  <p>This html page (and the following image) is a static file served by
+  the middleware <code>express.static</code>. Here is a link to <a href="page2.html">page 2</a>.</p>
+
+  <img src='/ox.png' alt=''/>
+
+  <p>This server also uses the <code>compression</code> middleware to compress response body when necessary. Check the response header of this GET request to <a href="db.json">db.json</a>.</p>
+</body>
+</html>

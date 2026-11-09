@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vue v-for Example</title>
+
+    <style>
+        .box {
+            border: 1px solid red;
+            padding: 5px;
+            margin: 5px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+
+        <p v-if="sport.length === 0">
+            I don't really like sports
+        </p>
+
+        <p v-else>
+            My favorite sports:
+
+            <span v-for="x in sport" class="box">
+                {{ x }}
+            </span>
+        </p>
+
+    </div>
+
+
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <script>
+        const options = {
+
+            data() {
+                return {
+                    sport: [
+                        "football",
+                        "running",
+                        "swimming"
+                    ]
+                };
+            }
+
+        };
+
+        Vue.createApp(options).mount("#app");
+    </script>
+
+</body>
+
+</html>

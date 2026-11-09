@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <title>Exercise 2.5 Question 2</title>
+    </head>
+    <body>
+        <script>
+            // 2-5 Q2. The variable `comp312` is an array that contains 
+            // records of student marks in the comp312 class. Each student 
+            // record has three fields: name, test and exam. Write programs 
+            // to do the following. Use an Array iteration method 
+            // (i.e. `.map()`, `.filter()`, `.sort()`, etc.)
+            // at least once 
+            // in each case.
+            //
+            // 1. Get a list of student names in the comp312 class
+            // 2. Get a list of student record with test mark >= 75
+            // 3. Get a list of student name whose test mark is greater than 
+            //    exam mark
+            // 4. Assume final mark = 0.6 * test + 0.4 * exam. Make an array 
+            //    with records showing the final mark and name for each student.
+            // 5. Sort the list in descending order of exam mark
+
+            let comp312 = [
+            { name: 'Peter', test: 80, exam: 70 },
+            { name: 'John', test: 60, exam: 65 },
+            { name: 'Mary', test: 90, exam: 85 },
+            { name: 'Christine', test: 70, exam: 76 }
+            ];
+
+            // your work here
+            let names = comp312.map(x => x.name);
+            console.log(names);
+
+            let mark = comp312.filter(x => x.test>=75).map(x => x.test);
+            console.log(mark);
+
+            let highMask = comp312.filter(x => x.test > x.exam).map(x => x.name);
+            console.log(highMask);
+
+            let finalMark = comp312.map(x => {
+                let name = x.name;
+                let final = 0.6*x.test + 0.4*x.exam;
+                return {name:name, final:final}
+            });
+            console.log(finalMark);
+
+            let sortResult = comp312.sort((a,b)=>{
+                if (a.exam < b.exam) return 1;
+                if (a.exam > b.exam) return -1;
+                return 0;
+            });
+            console.log(sortResult);
+        </script>
+    </body>
+</html>

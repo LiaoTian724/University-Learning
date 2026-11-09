@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vue Data Binding Example</title>
+
+    <style>
+        #myBox {
+            color: red;
+            font-size: 24px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+
+        <!-- 文本绑定 -->
+        <p>Hello, {{ name }}</p>
+
+        <!-- 图片 src 属性绑定  v-bind:src="imageURL" 是完整写法 -->
+        <img :src="imageURL" width="150"> <br><br>
+        <img v-bind:src="imageURL" width="150">
+        
+        <br><br>
+
+        <!-- 超链接 href 属性绑定 -->
+        <a :href="website">
+            Open Website
+        </a>
+
+        <br><br>
+
+        <!-- title 属性绑定   title 鼠标悬停-->
+        <p :title="message">
+            Move mouse here
+        </p>
+
+        <!-- id 属性绑定 -->
+        <div :id="boxId">
+            This div has a dynamic id.
+        </div>
+
+        <br>
+
+        <!-- placeholder 属性绑定 -->
+        <input :placeholder="hint">
+
+        <br><br>
+
+        <!-- value 属性绑定 -->
+        <input :value="username">
+
+    </div>
+
+
+    <!-- Load Vue 3 -->
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <script>
+        const options = {
+
+            data() {
+                return {
+                    name: "Tom",
+
+                    imageURL: "https://images.pexels.com/photos/20804701/pexels-photo-20804701.jpeg?cs=srgb&dl=pexels-agrosales-20804701.jpg&fm=jpg",
+
+                    website: "https://www.example.com",
+
+                    message: "Hello, this is the title attribute!",
+
+                    boxId: "myBox",
+
+                    hint: "Enter your name",
+
+                    username: "Zhang San"
+                };
+            }
+
+        };
+
+        Vue.createApp(options).mount("#app");
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vue Computed Example</title>
+</head>
+
+<body>
+
+    <div id="app">
+
+        <p>
+            Temperature: {{ temperature }} °C
+        </p>
+
+        <img v-bind:src="temperatureUrl" width="120">
+
+        <br><br>
+
+        <button @click="temperature = 30">
+            Set 30
+        </button>
+
+        <button @click="temperature = 10">
+            Set 10
+        </button>
+
+    </div>
+
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <script>
+        const options = {
+
+            data() {
+                return {
+                    temperature: 8
+                };
+            },
+
+            computed: {
+                temperatureUrl() {
+
+                    if (this.temperature >= 14) {
+                        return "image/high-temp.png";
+                    }
+
+                    return "image/low-temp.png";
+                }
+            }
+
+        };
+
+        Vue.createApp(options).mount("#app");
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,29 @@
+<html>
+
+<head>
+    <title>Exercise 2.3 Question 1</title>
+</head>
+
+<body>
+    <script>
+        // 2-3 Q1. Write a **function** `sum(num)` to calculate the
+        // sum of elements in an array `num`.
+
+        // your work here
+
+        let x = [1, 2, 3, 4, 5];
+        function sum(s) {
+            let result = 0;
+            for (let i of s) {
+                result += i;
+            }
+            return result;
+        }
+        
+        let ans = sum(x);
+        console.log('Correct? ', ans == 15);
+
+    </script>
+</body>
+
+</html>

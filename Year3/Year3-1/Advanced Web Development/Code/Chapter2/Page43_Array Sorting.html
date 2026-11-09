@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Sort Demo</title>
+</head>
+
+<body>
+
+
+<script>
+    let numbers1 = [4, 1, 5, 2, 3];
+
+    let compare_up = function(a, b) {
+        if (a < b) return -1;
+        if (a > b) return 1;
+        return 0;
+    };
+
+    numbers1.sort(compare_up);
+    console.log(numbers1);
+
+    let numbers2 = [4, 1, 5, 2, 3];
+
+    let compare_down = function(a, b) {
+        if (a < b) return 1;
+        if (a > b) return -1;
+        return 0;
+    };
+
+    numbers2.sort(compare_down);
+    console.log(numbers2);
+</script>
+
+</body>
+</html>

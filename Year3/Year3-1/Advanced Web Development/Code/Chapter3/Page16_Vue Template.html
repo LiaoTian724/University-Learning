@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vue Example</title>
+</head>
+
+<body>
+
+    <div id="app">
+        <div>1 + 2 * 3 = {{ 1 + 2 * 3 }}</div>
+        <div>It's now {{ (new Date).toLocaleTimeString() }}</div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <script>
+        const options = {};
+
+        const vm = Vue.createApp(options).mount("#app");
+    </script>
+
+</body>
+
+</html>

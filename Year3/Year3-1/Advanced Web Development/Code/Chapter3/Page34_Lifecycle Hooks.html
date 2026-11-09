@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vue Unmounted Example</title>
+</head>
+
+<body>
+
+    <div id="app">
+        <p>Count: {{ count }}</p>
+    </div>
+
+    <button id="removeButton">
+        Unmount Vue App
+    </button>
+
+
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <script>
+        const options = {
+
+            data() {
+                return {
+                    count: 0
+                };
+            },
+
+            created() {
+                console.log("created");
+                setInterval(() => {
+                    this.count++;
+                }, 1000);
+            },
+
+            mounted() {
+                console.log("mounted");
+            },
+
+            updated() {
+                console.log("updated");
+            },
+
+            unmounted() {
+                console.log("unmounted");
+            }
+        };
+
+
+        // 1. Create Vue application
+        const app = Vue.createApp(options);
+
+        // 2. Mount Vue application
+        app.mount("#app");
+
+
+        // 3. Click button to unmount Vue
+        let button = document.getElementById("removeButton");
+
+        button.addEventListener("click", function() {
+            app.unmount();
+        });
+
+    </script>
+
+</body>
+
+</html>

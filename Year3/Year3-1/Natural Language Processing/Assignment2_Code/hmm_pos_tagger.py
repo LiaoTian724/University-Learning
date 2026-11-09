@@ -34,7 +34,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 
 print("Training sentences:", len(X_train))
 print("Testing sentences:", len(X_test))
-print("================================")
+
 
 # Training
 emission_counts = {}        # eg:  {("DT", "The"): 1, ("NN", "cat"): 1, ("VBZ", "eats"): 1}
@@ -100,7 +100,7 @@ for pair in transition_counts:
     if previous_tag != "<START>":
         count = transition_counts[pair]
         # print(count)
-        # transition_probs_mle[pair] = count / tag_counts[previous_tag]
+        transition_probs_mle[pair] = count / tag_counts[previous_tag]
 
 
 # Calculate Emission Probability

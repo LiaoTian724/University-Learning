@@ -1,0 +1,10 @@
+{
+  "name": "chap4-5",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "sqlite": "^5.1.1",
+    "sqlite3": "^6.0.1"
+  },
+  "author": "Philip Lei"
+}

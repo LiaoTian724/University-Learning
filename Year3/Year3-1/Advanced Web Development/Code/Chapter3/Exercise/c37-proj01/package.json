@@ -1,0 +1,16 @@
+{
+  "name": "proj01",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "web": "http-server",
+    "hello": "cowsay \"Hello npm script!\""
+  },
+  "author": "Patrick Pang",
+  "license": "ISC",
+  "dependencies": {
+    "cowsay": "^1.5.0",
+    "http-server": "^14.1.1"
+  }
+}

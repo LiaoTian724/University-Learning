@@ -1,0 +1,1 @@
+console.log("Hello world in Page7_main.js");

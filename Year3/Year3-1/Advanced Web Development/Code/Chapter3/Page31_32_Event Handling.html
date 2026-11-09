@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Vue Click Event</title>
+</head>
+
+<body>
+
+    <div id="app">
+
+        <p>
+            Click count: {{ count }}
+        </p>
+
+        <button v-on:click="add">
+            Add 1
+        </button>
+
+        <button @click="count--">
+            Minus 1
+        </button>
+
+        <button @click="reset">
+            Reset to 0
+        </button>
+
+    </div>
+
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <script>
+        const options = {
+
+            data() {
+                return {
+                    count: 0
+                };
+            },
+
+            methods: {
+                reset(event) {
+                    this.count = 0;
+                }, 
+                add(event) {
+                    this.count++;
+                }
+            }
+
+        };
+
+        Vue.createApp(options).mount("#app");
+    </script>
+
+</body>
+
+</html>

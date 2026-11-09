@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>setTimeout and setInterval</title>
+</head>
+
+<body>
+
+
+    <script>
+        let sayHi = () => {
+            console.log("Hi");
+        };
+
+        // 1秒后执行一次
+        setTimeout(sayHi, 1000);
+
+        // 每隔1秒执行一次
+        setInterval(sayHi, 1000);
+    </script>
+
+</body>
+</html>

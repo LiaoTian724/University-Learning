@@ -9,6 +9,17 @@ let app = express();
 import morgan from "morgan";
 app.use(morgan("tiny"));
 
+
+
+
+
+
+app.use(express.json());
+
+
+
+
+
 import api from "./api.mjs";
 app.use("/api", api);
 

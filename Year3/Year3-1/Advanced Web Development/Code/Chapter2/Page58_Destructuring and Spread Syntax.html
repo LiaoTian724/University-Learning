@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+      <meta charset="UTF-8">
+      <title>Destructuring and Spread</title>
+</head>
+
+<body>
+
+      <script>
+            let book = {
+                  title: "Principles of gaming technology",
+                  authors: ["Philip", "Andrew"],
+                  publisher: "McGraw Hill",
+                  isbn13: "978-981-4923-23-1",
+                  info: ['AAA', 'BBB', 'CCC', 'DDD']
+            };
+
+            // Object destructuring
+            let { title, publisher, ...others } = book;
+
+            console.log(title);
+            console.log(publisher);
+            console.log(others);
+
+            // Nested destructuring
+            let { authors: [a1, a2] } = book;
+            console.log(a1);
+            console.log(a2);
+
+            let { info: [b1, b2]} = book;
+            console.log(b1);
+            console.log(b2);
+
+            // Spread syntax
+            let p1 = {
+                  x: 2,
+                  y: 3
+            };
+
+            let p2 = {
+                  ...p1,
+                  z: 0
+            };
+
+            console.log(p2);
+      </script>
+
+</body>
+
+</html>

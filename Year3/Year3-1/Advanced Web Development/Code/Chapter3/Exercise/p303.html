@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>chap 3 example</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"> 
+  <style>
+    .try { background-color: lightgreen; color: white; padding: 0px 10px 1px 1px; border-radius: 0px 0px 7px 0px; }
+    div span { color: blue; }
+  </style>
+</head>
+<body class="container">
+
+<h1>Example p303</h1>
+<p>This example demonstrates that, in addition to the name of a data property, the directive to bind attribute <code>:<i>attr</i></code> can also evaluate simple JavaScript expression. However, a <em>computed property</em> is more appropriate for more complicated logic. A computed property is similar to a read-only data property, and its value is usually calculated from the data properties.
+
+<p>The <code>style</code> attribute of HTML elements allows you to use CSS style rules to change the appearance of the elements. In Vue, you can bind a JavaScript object (group of property names and values) to the <code>style</code> attribute. Vue will handle the difference in naming convention in JavaScript (camelCase) and CSS (kebab-case).</p>
+
+<p>There is also a special handling in binding the <code>class</code> attribute. See 
+<a href="https://v3.vuejs.org/api/directives.html#v-bind">online reference</a> for more information.</p>
+
+<hr>
+
+<div id="app">
+  <div>
+    Temperature: 
+    <span :style="styleTemperature">{{ temperature }}°C</span>
+    <img :src="temperature >= 14 ? 'image/high-temp.png' : 'image/low-temp.png'">
+  </div>
+  <div>Rain: 
+    <span :style="styleRain">{{ rain }}%</span>
+    <img :src="rainImageURL">
+  </div>
+</div>
+
+<hr/>
+
+<p><span class='try'> Try the following</span></p> 
+<ul>
+  <li>Set <code>vm.temperature</code> to 10 and 20. Check the source code to find out how the image changes for different temperature.</li>
+  <li>Check the value of <code>vm.styleTemperature</code>. It's a JavaScript object! Notice that the property names of this object use camelCase, not kebab-case (which is the naming convention in CSS).</li>
+  <li>Change the style of the temperature text. e.g. <code>vm.styleTemperature.color = 'red'</code>, <code>vm.styleTemperature = { fontSize:'150%', backgroundColor:'white', color:'red'}</code>.
+  </li>
+  <li>Set <code>vm.rain</code> to 20, 40 and 80. Read the source code of the computed property <code>styleRain</code> that changes the appearance of the rain percentage.</li>
+  <li>Also read the source code of the computed property <code>rainImageURL</code>.</li>
+</ul>
+
+<div style='font-size:50%'>
+  <div>Icons made by <a href="https://www.flaticon.com/authors/vitaly-gorbachev" title="Vitaly Gorbachev">Vitaly Gorbachev</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div><div>Icons made by <a href="https://www.flaticon.com/authors/bqlqn" title="bqlqn">bqlqn</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+</div>
+
+<!-- loading the Vue v3 JavaScript library from CDN -->    
+<script src="https://unpkg.com/vue@3"></script>
+
+<script>
+// define a Vue options object
+const weather = {
+  data() {
+    return {
+      temperature: 28, 
+      styleTemperature: { fontWeight: 'bold', color: 'orange' },
+      rain: 10, 
+    }
+  },
+  computed: {
+    styleRain() {
+      const r = parseFloat(this.rain);
+      let color;
+      if (r < 30) {
+        color = { color: 'yellow', backgroundColor: 'lightblue' }
+      } else if (r < 70) {
+        color = { color: 'red', backgroundColor: 'lightgreen' }
+      } else {
+        color = { color: 'black', backgroundColor: 'lightgray' }
+      }
+      return {
+        ...color, padding: '0em 1em'
+      };
+    },
+    rainImageURL() {
+      const r = parseFloat(this.rain);
+      if (r == 0) return 'image/sunny.png';
+      if (r < 30) return 'image/rainy-1.png';
+      if (r < 70) return 'image/rainy-2.png';
+      return 'image/rainy-3.png';
+    }
+  }
+};
+
+// create a Vue component, mounted to the HTML template
+const vm = Vue.createApp(weather).mount('#app');
+
+</script>
+
+</body>
+</html>

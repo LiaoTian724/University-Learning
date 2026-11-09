@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Function as Parameter</title>
+</head>
+
+<body>
+
+    <script>
+        // A function
+        let sayHi = () => {
+            console.log("Hi");
+        };
+
+        // Another function
+        let executeFunction = function(func) {
+            func();
+        };
+
+        // Pass sayHi function into executeFunction
+        executeFunction(sayHi);
+    </script>
+
+</body>
+</html>

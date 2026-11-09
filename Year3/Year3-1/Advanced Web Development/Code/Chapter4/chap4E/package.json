@@ -1,0 +1,11 @@
+{
+  "name": "comp312-examples",
+  "description": "Examples for Express.js in comp312",
+  "version": "0.1.1",
+  "private": true,
+  "dependencies": {
+    "compression": "^1.8.2",
+    "express": "^5.3.0",
+    "morgan": "^1.12.1"
+  }
+}
