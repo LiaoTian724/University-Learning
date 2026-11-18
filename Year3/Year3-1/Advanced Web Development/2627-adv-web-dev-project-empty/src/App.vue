@@ -6,12 +6,13 @@
                 sortBy: 'default',
                 errorMessage: '',
 
-                participants: [
-                    {id: 0, name:"Michael Jason", age:23, record_1: 274, record_2:147, record_3: 223},
-                    {id: 1, name:'Zhang San',     age:18, record_1: 86,  record_2:455, record_3: 312},
-                    {id: 2, name:'Albert Bappu',  age:47, record_1: 352, record_2:243, record_3: 366},
-                    {id: 3, name:'Tai Man Chan',  age:23, record_1: 274, record_2:176, record_3: 233},
-                ],
+                // participants: [
+                //     {id: 0, name:"Michael Jason", age:23, record_1: 274, record_2:147, record_3: 223},
+                //     {id: 1, name:'Zhang San',     age:18, record_1: 86,  record_2:455, record_3: 312},
+                //     {id: 2, name:'Albert Bappu',  age:47, record_1: 352, record_2:243, record_3: 366},
+                //     {id: 3, name:'Tai Man Chan',  age:23, record_1: 274, record_2:176, record_3: 233},
+                // ],
+                participants:[],
 
                 showForm: false,
                 
@@ -19,8 +20,19 @@
                 form: {name:'',    age:null,     record_1:null,   record_2:null,   record_3:null}
             };
         },
+        mounted() {this.loadParticipants();},
 
         methods: {
+            async loadParticipants() {
+                try {
+                    const response = await fetch("/api/records");
+                    const data = await response.json();
+                    this.participants = data;
+                } catch (error) {
+                    console.log(error);
+                }
+            },
+
             sortTime(person) {
                 let time = [person.record_1, person.record_2, person.record_3];
                 return time.sort((a,b)=>a-b);

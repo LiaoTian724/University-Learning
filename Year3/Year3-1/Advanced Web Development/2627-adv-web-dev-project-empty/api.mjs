@@ -9,6 +9,7 @@ const db = await open({
 import express from "express";
 let api = express.Router();
 
+
 /* your API endpoints here */
 api.get("/records", async (req, res) => {
     try {
@@ -19,6 +20,8 @@ api.get("/records", async (req, res) => {
         res.status(500).json({ error: "Failed to load records" });
     }
 });
+
+
 
 api.post("/records", async(req, res) => {
     const body = req.body || {};
@@ -46,6 +49,29 @@ api.post("/records", async(req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({error: "Failed to add record"});
+    }
+});
+
+
+
+api.delete("/records/:id", async(req, res) => {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id < 1) {
+        return res.status(400).json({error: "Invalid record ID"});
+    }
+    try {
+        const result = await db.run("DELETE FROM Record WHERE id = ?", [id]);
+        if (result.changes === 0) {
+            return res.status(404).json({error: "Record not found"});
+        }
+
+        res.status(204).end();
+    } catch(error) {
+        console.log(error);
+        res.status(500).json({
+            error: "Failed to delete record"
+        });
     }
 });
 export default api;
