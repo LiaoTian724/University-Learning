@@ -13,9 +13,7 @@
                 //     {id: 3, name:'Tai Man Chan',  age:23, record_1: 274, record_2:176, record_3: 233},
                 // ],
                 participants:[],
-
                 showForm: false,
-                
                 nextId: 4,
                 form: {name:'',    age:null,     record_1:null,   record_2:null,   record_3:null}
             };
@@ -49,42 +47,89 @@
                 }
             },
 
-            addParticipant() {
-                this.errorMessage = '';
+            // addParticipant() {
+            //     this.errorMessage = '';
                 
-                if (this.form.name == '') {
+            //     if (this.form.name == '') {
+            //         this.errorMessage = 'Please enter a name';
+            //         return;
+            //     }
+            //     if (this.form.age == '' || this.form.age < 1 || !Number.isInteger(Number(this.form.age))) {
+            //         this.errorMessage = 'Please enter a valid age';
+            //         return;
+            //     }
+            //     if (this.form.record_1 == null || this.form.record_1 < 0 || 
+            //         this.form.record_2 == null || this.form.record_2 < 0 ||
+            //         this.form.record_3 == null || this.form.record_3 < 0) {
+            //         this.errorMessage = 'Please make sure all attempts are correct';
+            //         return;
+            //     }
+            //     // for (let i=0; i < this.participants.length; i++) {
+            //     //     if (this.participants[i].name == this.form.name) {
+            //     //         this.errorMessage = 'This name already exists';
+            //     //         return;
+            //     //     }
+            //     // }
+
+            //     this.participants.push({
+            //         id: this.nextId++,
+            //         name: this.form.name,
+            //         age: this.form.age,
+            //         record_1: this.form.record_1,
+            //         record_2: this.form.record_2,
+            //         record_3: this.form.record_3
+            //     });
+            //     this.showForm = false;
+            //     this.form = {name:'',    age:null,     record_1:null,   record_2:null,   record_3:null};
+            //     this.errorMessage = '';
+            // }
+            async addParticipant() {
+                this.errorMessage = '';
+                if (this.form.name.trim() === '') {
                     this.errorMessage = 'Please enter a name';
                     return;
                 }
-                if (this.form.age == '' || this.form.age < 1 || !Number.isInteger(Number(this.form.age))) {
-                    this.errorMessage = 'Please enter a valid age';
+                if (!Number.isInteger(this.form.age) || this.form.age < 1) {
+                    this.errorMessage = "Please enter a valid age";
                     return;
                 }
-                if (this.form.record_1 == null || this.form.record_1 < 0 || 
-                    this.form.record_2 == null || this.form.record_2 < 0 ||
-                    this.form.record_3 == null || this.form.record_3 < 0) {
-                    this.errorMessage = 'Please make sure all attempts are correct';
+                if (!Number.isInteger(this.form.record_1) || this.form.record_1 < 0 ||
+                    !Number.isInteger(this.form.record_2) || this.form.record_2 < 0 ||
+                    !Number.isInteger(this.form.record_3) || this.form.record_3 < 0
+                ) {
+                    this.errorMessage = "Please make sure all records are correct";
                     return;
                 }
-                // for (let i=0; i < this.participants.length; i++) {
-                //     if (this.participants[i].name == this.form.name) {
-                //         this.errorMessage = 'This name already exists';
-                //         return;
-                //     }
-                // }
 
-                this.participants.push({
-                    id: this.nextId++,
-                    name: this.form.name,
+                const newParticipant = {
+                    name: this.form.name.trim(),
                     age: this.form.age,
                     record_1: this.form.record_1,
                     record_2: this.form.record_2,
                     record_3: this.form.record_3
-                });
-                this.showForm = false;
-                this.form = {name:'',    age:null,     record_1:null,   record_2:null,   record_3:null};
-                this.errorMessage = '';
-            }
+                };
+
+                try {
+                    const response = await fetch('/api/records', {
+                        // POST /api/records
+                        method: "POST",
+                        headers:{'Content-Type': 'application/json'},
+                        body: JSON.stringify(newParticipant)        // JSON.stringify() 将 JavaScript 对象转换成 JSON 字符串
+                    });
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        this.errorMessage = data.error || 'Failed to add record';
+                        return;
+                    }
+                    this.participants.push(data);
+                    this.showForm = false;
+                    this,form = {name:'', age:null, record_1:null, record_2: null, record_3: null};
+                }  catch (error) {
+                    console.log(error);
+                    this.errorMessage = 'Cannot connect to server';
+                }
+            },
         },
 
         computed: {

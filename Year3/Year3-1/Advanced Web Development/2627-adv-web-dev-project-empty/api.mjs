@@ -42,9 +42,7 @@ api.post("/records", async(req, res) => {
             "INSERT INTO Record (name, age, record_1, record_2, record_3) VALUES (?, ?, ?, ?, ?)",
             [name.trim(), age, record_1, record_2, record_3]
         );
-        const newRecord = await db.get("SELECT * FROM Record WHERE id = ?",
-            [result.lastID]
-        );
+        const newRecord = await db.get("SELECT * FROM Record WHERE id = ?", [result.lastID]);
         res.status(201).json(newRecord);    // JavaScript 转成 JSON
     } catch (error) {
         console.error(error);
