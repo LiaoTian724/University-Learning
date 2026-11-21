@@ -5,6 +5,8 @@
             return {
                 sortBy: 'default',
                 errorMessage: '',
+                pageError: '',
+
 
                 // participants: [
                 //     {id: 0, name:"Michael Jason", age:23, record_1: 274, record_2:147, record_3: 223},
@@ -15,7 +17,7 @@
                 participants:[],
                 showForm: false,
                 nextId: 4,
-                form: {name:'',    age:null,     record_1:null,   record_2:null,   record_3:null}
+                form: {name:'',    age:null,     record_1:null,   record_2:null,   record_3:null},
             };
         },
         mounted() {this.loadParticipants();},
@@ -24,6 +26,9 @@
             async loadParticipants() {
                 try {
                     const response = await fetch("/api/records");
+                    if (!response.ok) {
+                        throw new Error('Failed to load records');
+                    }
                     const data = await response.json();
                     this.participants = data;
                 } catch (error) {
@@ -41,11 +46,27 @@
                 return sorted[0];
             },
 
-            deleteParticipant(id) {
-                if (confirm('Are you sure you want to delete this record?')) {
-                    this.participants = this.participants.filter(person=>person.id != id);
+            // deleteParticipant(id) {
+            //     if (confirm('Are you sure you want to delete this record?')) {
+            //         this.participants = this.participants.filter(person=>person.id != id);
+            //     }
+            // },
+            async deleteParticipant(id) {
+                if (!confirm("Are you sure you want to delete this record?")) {
+                    return;
                 }
-            },
+                this.pageError = '';
+                try {
+                    const response = await fetch(`/api/records/${id}`, {method:'DELETE'});
+                    if (!response.ok) {
+                        throw new Error('Failed to delete record');
+                    }
+                    this.participants = this.participants.filter(person => person.id != id);
+                } catch (error) {
+                    console.log(error);
+                    this.pageError = 'Cannot delete record';
+                }
+            }, 
 
             // addParticipant() {
             //     this.errorMessage = '';
@@ -124,7 +145,7 @@
                     }
                     this.participants.push(data);
                     this.showForm = false;
-                    this,form = {name:'', age:null, record_1:null, record_2: null, record_3: null};
+                    this.form = {name:'', age:null, record_1:null, record_2: null, record_3: null};
                 }  catch (error) {
                     console.log(error);
                     this.errorMessage = 'Cannot connect to server';
@@ -173,6 +194,9 @@
                 <el-option label="Best Record" value="best"></el-option>
             </el-select>
         </div>
+        <p v-if="pageError" class="error">
+            {{ pageError }}
+        </p>
 
         <div class="table-container">
             <table class="record-table">

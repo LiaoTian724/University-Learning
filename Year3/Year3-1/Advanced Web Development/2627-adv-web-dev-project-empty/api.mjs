@@ -25,11 +25,11 @@ api.get("/records", async (req, res) => {
 
 api.post("/records", async(req, res) => {
     const body = req.body || {};
-    const name = req.body.name;
-    const age = req.body.age;
-    const record_1 = req.body.record_1;
-    const record_2 = req.body.record_2;
-    const record_3 = req.body.record_3;
+    const name = body.name;
+    const age = body.age;
+    const record_1 = body.record_1;
+    const record_2 = body.record_2;
+    const record_3 = body.record_3;
 
     if (typeof name !== 'string' || name.trim() === "" || !Number.isInteger(age) || age < 1 ||
         !Number.isInteger(record_1) || record_1 < 0 ||
