@@ -11,37 +11,70 @@ let api = express.Router();
 
 
 /* your API endpoints here */
+api.put('/records/:id', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) {
+        return res.status(400).json({error: "Invalid record ID"});
+    }
+    if (typeof req.body.name !== 'string' || req.body.name.trim() === "" || !Number.isInteger(req.body.age) || req.body.age < 1 ||
+        !Number.isInteger(req.body.record_1) || req.body.record_1 < 0 ||
+        !Number.isInteger(req.body.record_2) || req.body.record_2 < 0 ||
+        !Number.isInteger(req.body.record_3) || req.body.record_3 < 0) {
+            return res.status(400).json({error:"Invalid participant data" })
+    }
+
+    const values = [
+        req.body.name.trim(),
+        req.body.age,
+        req.body.record_1,
+        req.body.record_2,
+        req.body.record_3,
+        id
+    ];
+    const q1 = `UPDATE Record SET name = ?, age = ?, record_1 = ?, record_2 = ?, record_3 = ? WHERE id = ?`;
+    try {
+        const result = await db.run(q1, values);
+        if (result.changes === 0) {
+            return res.status(404).json({error: "Record not found"});
+        }
+        const updateRecord = await db.get("SELECT * FROM Record WHERE id = ?", [id]);
+        res.status(200).json(updateRecord);
+    } catch(error) {
+        res.status(500).json({error: "Failed to update record"});
+    }
+});
+
+
+
 api.get("/records", async (req, res) => {
     try {
         const result = await db.all("SELECT * FROM Record ORDER BY id");
         res.status(200).json(result);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to load records" });
+        res.status(500).json(error);
     }
 });
 
 
 
 api.post("/records", async(req, res) => {
-    const body = req.body || {};
-    const name = body.name;
-    const age = body.age;
-    const record_1 = body.record_1;
-    const record_2 = body.record_2;
-    const record_3 = body.record_3;
-
-    if (typeof name !== 'string' || name.trim() === "" || !Number.isInteger(age) || age < 1 ||
-        !Number.isInteger(record_1) || record_1 < 0 ||
-        !Number.isInteger(record_2) || record_2 < 0 ||
-        !Number.isInteger(record_3) || record_3 < 0) {
+    if (typeof req.body.name !== 'string' || req.body.name.trim() === "" || !Number.isInteger(req.body.age) || req.body.age < 1 ||
+        !Number.isInteger(req.body.record_1) || req.body.record_1 < 0 ||
+        !Number.isInteger(req.body.record_2) || req.body.record_2 < 0 ||
+        !Number.isInteger(req.body.record_3) || req.body.record_3 < 0) {
             return res.status(400).json({error:"Invalid participant data" })
-        }
+    }
+
+    const q1 = `INSERT INTO Record (name, age, record_1, record_2, record_3) VALUES (?, ?, ?, ?, ?)`;
+    const values = [
+        req.body.name.trim(),
+        req.body.age,
+        req.body.record_1,
+        req.body.record_2,
+        req.body.record_3
+    ];
     try {
-        const result = await db.run(
-            "INSERT INTO Record (name, age, record_1, record_2, record_3) VALUES (?, ?, ?, ?, ?)",
-            [name.trim(), age, record_1, record_2, record_3]
-        );
+        const result = await db.run(q1, values);
         const newRecord = await db.get("SELECT * FROM Record WHERE id = ?", [result.lastID]);
         res.status(201).json(newRecord);    // JavaScript 转成 JSON
     } catch (error) {
@@ -67,9 +100,8 @@ api.delete("/records/:id", async(req, res) => {
         res.status(204).end();
     } catch(error) {
         console.log(error);
-        res.status(500).json({
-            error: "Failed to delete record"
-        });
+        res.status(500).json({error: "Failed to delete record"});
     }
 });
+
 export default api;
