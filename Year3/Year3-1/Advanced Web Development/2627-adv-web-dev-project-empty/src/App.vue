@@ -7,7 +7,7 @@
         components: {FormCreate, FormEdit},
         data() {
             return {
-                errorMessage: '',
+                sortBy: 'default',
                 pageError: '',
                 participants:[],
             };
@@ -38,15 +38,9 @@
                 return sorted[0];
             },
 
-            // deleteParticipant(id) {
-            //     if (confirm('Are you sure you want to delete this record?')) {
-            //         this.participants = this.participants.filter(person=>person.id != id);
-            //     }
-            // },
+
             async deleteParticipant(id) {
-                if (!confirm("Are you sure you want to delete this record?")) {
-                    return;
-                }
+                if (!confirm("Are you sure you want to delete this record?")) { return; }
                 this.pageError = '';
                 try {
                     const response = await fetch(`/api/records/${id}`, {method:'DELETE'});
@@ -63,10 +57,11 @@
             handleCreate() {
                 this.$refs.formCreate.showDialog();
             },
+
             async handleFormCreateConfirm(rec) {
                 try {
                     const response = await fetch('/api/records', {
-                        methods: 'POST',
+                        method: 'POST',
                         headers: {"Content-Type": 'application/json'},
                         body: JSON.stringify(rec)
                     });
@@ -87,7 +82,9 @@
             async handleFormEditConfirm(rec) {
                 try {
                     const response = await fetch(`/api/records/${rec.id}`, {
-                        method: 'PUT', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(rec)
+                        method: 'PUT', 
+                        headers: {'Content-Type': 'application/json'}, 
+                        body: JSON.stringify(rec)
                     });
 
                     const data = await response.json();
