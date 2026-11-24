@@ -17,6 +17,14 @@ export default {
             this.dialogVisible = true;
         },
 
+        closeDialog() {
+            this.dialogVisible = false;
+        },
+        
+        showError(message) {
+            this.errorMessage = message;
+        },
+
         handleCancel() {
             this.dialogVisible = false;
             this.$emit("cancel");
@@ -50,8 +58,8 @@ export default {
                 record_3: this.form.record_3
             };
 
-            this.dialogVisible = false;
-            this.$emit("confirm", record);
+            // this.dialogVisible = false;
+            this.$emit("confirm", record);  // $emit 子组件 通知 父组件
         }
     }
 };

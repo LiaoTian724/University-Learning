@@ -16,15 +16,19 @@
 
         methods: {
             async loadParticipants() {
+                this.pageError = '';
                 try {
-                    const response = await fetch("/api/records");
-                    const data = await response.json();
+                    const response = await fetch("/api/records", {
+                        method: 'GET'
+                    });
                     if (!response.ok) {
                         throw new Error('Failed to load records');
                     }
+                    const data = await response.json();
                     this.participants = data;
                 } catch (error) {
                     console.log(error);
+                    this.pageError = 'Cannot load records';
                 }
             },
 
@@ -43,22 +47,26 @@
                 if (!confirm("Are you sure you want to delete this record?")) { return; }
                 this.pageError = '';
                 try {
-                    const response = await fetch(`/api/records/${id}`, {method:'DELETE'});
+                    const response = await fetch(`/api/records/${id}`, {
+                        method:'DELETE'
+                    });
                     if (!response.ok) {
                         throw new Error('Failed to delete record');
                     }
-                    this.participants = this.participants.filter(person => person.id != id);
+                    await this.loadParticipants();
                 } catch (error) {
                     console.log(error);
                     this.pageError = 'Cannot delete record';
                 }
             }, 
 
+            // 父组件 调用 子组件 $refs
             handleCreate() {
                 this.$refs.formCreate.showDialog();
             },
 
             async handleFormCreateConfirm(rec) {
+                this.pageError = '';
                 try {
                     const response = await fetch('/api/records', {
                         method: 'POST',
@@ -70,6 +78,7 @@
                         throw new Error(data.error || "Failed to add record");
                     }
                     this.participants.push(data);
+                    this.$refs.formCreate.closeDialog();
                 } catch (error) {
                     console.log(error),
                     this.pageError = "Cannot add record";
@@ -79,7 +88,9 @@
             handleEdit(person) {
                 this.$refs.formEdit.showDialog(person);
             },
+
             async handleFormEditConfirm(rec) {
+                this.pageError = '';
                 try {
                     const response = await fetch(`/api/records/${rec.id}`, {
                         method: 'PUT', 
@@ -90,8 +101,8 @@
                     const data = await response.json();
                     if (!response.ok) {throw new Error(data.error || 'Failed to update record');}
 
-                    const index = this.participants.findIndex(person => person.id == data.id);
-                    if (index >= 0) {this.participants[index] = data;}
+                    this.$refs.formEdit.closeDialog();
+                    await this.loadParticipants();
                 } catch (error) {
                     console.log(error);
                     this.pageError = 'Cannot update record';

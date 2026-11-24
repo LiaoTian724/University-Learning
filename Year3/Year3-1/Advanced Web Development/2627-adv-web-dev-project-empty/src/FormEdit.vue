@@ -31,6 +31,14 @@ export default {
             this.$emit("cancel");
         },
 
+        closeDialog() {
+            this.dialogVisible = false;
+        },
+
+        showError(message) {
+            this.errorMessage = message;
+        },
+
         handleConfirm() {
             this.errorMessage = "";
 
@@ -56,7 +64,7 @@ export default {
                 record_1: this.form.record_1, record_2: this.form.record_2, record_3: this.form.record_3
             };
 
-            this.dialogVisible = false;
+            // this.dialogVisible = false;
             this.$emit("confirm", record);
         }
     }

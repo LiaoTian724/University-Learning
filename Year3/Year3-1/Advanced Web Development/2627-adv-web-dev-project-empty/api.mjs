@@ -16,7 +16,9 @@ api.put('/records/:id', async (req, res) => {
     if (!Number.isInteger(id) || id < 1) {
         return res.status(400).json({error: "Invalid record ID"});
     }
-    if (typeof req.body.name !== 'string' || req.body.name.trim() === "" || !Number.isInteger(req.body.age) || req.body.age < 1 ||
+    if (
+        !req.body || 
+        typeof req.body.name !== 'string' || req.body.name.trim() === "" || !Number.isInteger(req.body.age) || req.body.age < 1 ||
         !Number.isInteger(req.body.record_1) || req.body.record_1 < 0 ||
         !Number.isInteger(req.body.record_2) || req.body.record_2 < 0 ||
         !Number.isInteger(req.body.record_3) || req.body.record_3 < 0) {
@@ -58,11 +60,11 @@ api.get("/records", async (req, res) => {
 
 
 api.post("/records", async(req, res) => {
-    if (typeof req.body.name !== 'string' || req.body.name.trim() === "" || !Number.isInteger(req.body.age) || req.body.age < 1 ||
+    if (!req.body || typeof req.body.name !== 'string' || req.body.name.trim() === "" || !Number.isInteger(req.body.age) || req.body.age < 1 ||
         !Number.isInteger(req.body.record_1) || req.body.record_1 < 0 ||
         !Number.isInteger(req.body.record_2) || req.body.record_2 < 0 ||
         !Number.isInteger(req.body.record_3) || req.body.record_3 < 0) {
-            return res.status(400).json({error:"Invalid participant data" })
+            return res.status(400).json({error:"Invalid participant data" });
     }
 
     const q1 = `INSERT INTO Record (name, age, record_1, record_2, record_3) VALUES (?, ?, ?, ?, ?)`;
